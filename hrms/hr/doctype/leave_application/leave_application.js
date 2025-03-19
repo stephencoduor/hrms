@@ -182,8 +182,11 @@ frappe.ui.form.on("Leave Application", {
 
 			frm.set_value(other_field, frm.doc[updated_field]);
 			frappe.show_alert({
-				message: __("To Date cannot be before From Date."),
-				indicator: "red",
+				message: __("Changing '{0}' to {1}.", [
+					__(frm.fields_dict[other_field].df.label),
+					frm.doc[updated_field],
+				]),
+				indicator: "blue",
 			});
 		}
 	},
