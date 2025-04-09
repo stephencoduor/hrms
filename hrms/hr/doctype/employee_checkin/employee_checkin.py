@@ -226,7 +226,9 @@ def mark_attendance_and_link_log(
 			if attendance_status == "Half Day" and (
 				attendance := get_existing_half_day_attendance(employee, attendance_date)
 			):
-				attendance.update(
+				frappe.db.set_value(
+					"Attendance",
+					attendance.name,
 					{
 						"half_day_status": "Present",
 						"working_hours": working_hours,
@@ -235,7 +237,7 @@ def mark_attendance_and_link_log(
 						"early_exit": early_exit,
 						"in_time": in_time,
 						"out_time": out_time,
-					}
+					},
 				)
 			else:
 				attendance = frappe.new_doc("Attendance")
@@ -271,6 +273,7 @@ def mark_attendance_and_link_log(
 
 
 def get_existing_half_day_attendance(employee, attendance_date):
+	print("does this even work")
 	attendance_name = frappe.db.exists(
 		"Attendance",
 		{
@@ -280,9 +283,10 @@ def get_existing_half_day_attendance(employee, attendance_date):
 			"half_day_status": "Absent",
 		},
 	)
+	print(attendance_name)
 	if attendance_name:
-		attenadance_doc = frappe.get_doc("Attendance", attendance_name)
-		return attenadance_doc
+		attendance_doc = frappe.get_doc("Attendance", attendance_name)
+		return attendance_doc
 	return None
 
 

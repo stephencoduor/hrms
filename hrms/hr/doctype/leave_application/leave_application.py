@@ -263,8 +263,6 @@ class LeaveApplication(Document, PWANotificationsMixin):
 					employee=self.employee,
 					attendance_date=date,
 					docstatus=("!=", 2),
-					status=("in", ["Absent", "Half Day"]),
-					half_day_status=("in", ["Absent", "None"]),
 				),
 			)
 			# don't mark attendance for holidays
@@ -290,7 +288,11 @@ class LeaveApplication(Document, PWANotificationsMixin):
 			# update existing attendance, change absent to on leave or half day
 			doc = frappe.get_doc("Attendance", attendance_name)
 			half_day_status = (
-				None if status == "On Leave" else "Absent" if doc.status == "Absent" else "On Leave"
+				None
+				if status == "On Leave"
+				else "Absent"
+				if (doc.status == "Absent" and status == "Half Day")
+				else "Present"
 			)
 			doc.db_set(
 				{
