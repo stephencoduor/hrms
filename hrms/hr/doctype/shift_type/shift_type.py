@@ -353,7 +353,7 @@ def update_last_sync_of_checkin():
 		filters={"enable_auto_attendance": 1, "auto_update_last_sync": 1},
 		fields=["name", "last_sync_of_checkin", "start_time"],
 	)
-	now = get_datetime() or frappe.flags.current_datetime
+	now = frappe.flags.current_datetime or get_datetime()
 	for shift in shifts:
 		time_within_shift = datetime.combine(now.date(), get_time(shift.start_time))
 		shift_end = get_shift_details(shift.name, time_within_shift)["actual_end"]
