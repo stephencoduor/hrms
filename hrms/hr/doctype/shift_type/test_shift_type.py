@@ -4,7 +4,14 @@ from datetime import datetime, timedelta
 
 import frappe
 from frappe.tests.utils import FrappeTestCase
-from frappe.utils import add_days, get_time, get_year_ending, get_year_start, getdate, now_datetime
+from frappe.utils import (
+	add_days,
+	get_time,
+	get_year_ending,
+	get_year_start,
+	getdate,
+	now_datetime,
+)
 
 from erpnext.setup.doctype.employee.test_employee import make_employee
 from erpnext.setup.doctype.holiday_list.test_holiday_list import set_holiday_list
@@ -38,16 +45,18 @@ class TestShiftType(FrappeTestCase):
 		date = getdate()
 		make_shift_assignment(shift_type.name, employee, date)
 
-		make_checkin(employee, datetime.combine(date, get_time("08:00:00")))
-		log_2 = make_checkin(employee, datetime.combine(date, get_time("08:45:53")))
+		# case 1: last sync updates from none to shift end after the shift end time
+		frappe.flags.current_datetime = datetime.combine(getdate(), get_time("14:00:00"))
 		update_last_sync_of_checkin()
 		shift_type.reload()
-		self.assertEqual(shift_type.last_sync_of_checkin, log_2.time)
+		# last sync should be updated to 13:00:00
+		self.assertEqual(shift_type.last_sync_of_checkin, datetime.combine(getdate(), get_time("13:01:00")))
 
-		log_3 = make_checkin(employee, datetime.combine(date, get_time("12:00:00")))
+		# case 2: last sync doesn't update in the middle of the shift
+		frappe.flags.current_datetime = add_days(datetime.combine(getdate(), get_time("12:00:00")), 1)
 		update_last_sync_of_checkin()
 		shift_type.reload()
-		self.assertEqual(shift_type.last_sync_of_checkin, log_3.time)
+		self.assertEqual(shift_type.last_sync_of_checkin, datetime.combine(getdate(), get_time("13:01:00")))
 
 	def test_mark_attendance(self):
 		from hrms.hr.doctype.employee_checkin.test_employee_checkin import make_checkin
