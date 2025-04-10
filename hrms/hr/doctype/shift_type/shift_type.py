@@ -107,7 +107,6 @@ class ShiftType(Document):
 			return
 
 		logs = self.get_employee_checkins()
-
 		group_key = lambda x: (x["employee"], x["shift_start"])  # noqa
 		for key, group in groupby(sorted(logs, key=group_key), key=group_key):
 			single_shift_logs = list(group)
