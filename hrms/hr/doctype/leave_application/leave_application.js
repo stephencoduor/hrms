@@ -184,7 +184,7 @@ frappe.ui.form.on("Leave Application", {
 			frappe.show_alert({
 				message: __("Changing '{0}' to {1}.", [
 					__(frm.fields_dict[other_field].df.label),
-					frm.doc[updated_field],
+					frappe.datetime.str_to_user(frm.doc[updated_field]),
 				]),
 				indicator: "blue",
 			});
