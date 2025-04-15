@@ -81,7 +81,7 @@ class TestIncomeTaxComputation(FrappeTestCase):
 			"employee_name": "employee_tax_computation@example.com",
 			"department": "All Departments",
 			"income_tax_slab": self.income_tax_slab,
-			"ctc": 936000.0,
+			"gross_earnings": 936000.0,
 			"professional_tax": 2400.0,
 			"standard_tax_exemption": 50000,
 			"total_exemption": 52400.0,
