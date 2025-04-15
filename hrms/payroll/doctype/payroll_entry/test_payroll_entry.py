@@ -728,7 +728,7 @@ class TestPayrollEntry(FrappeTestCase):
 			"process_payroll_accounting_entry_based_on_employee": 1,
 		},
 	)
-	def test_payroll_entry_with_present_and_absent_employees(self):
+	def test_skip_bank_entry_for_employees_with_zero_amount(self):
 		company_doc = frappe.get_doc("Company", "_Test Company")
 		employee1 = make_employee("test_employee11@payroll.com", company=company_doc.name)
 		employee2 = make_employee("test_employee12@payroll.com", company=company_doc.name)
