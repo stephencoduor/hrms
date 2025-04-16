@@ -435,15 +435,39 @@ class IncomeTaxComputationReport:
 
 		for employee, emp_details in self.employees.items():
 			total_taxable_amount = 0.0
+			annual_taxable_amount = tax_exemption_declaration = standard_tax_exemption_amount = 0.0
+
 			last_ss = self.get_last_salary_slip(employee)
-			if last_ss:
-				total_taxable_amount = frappe.db.get_value(
-					"Salary Slip", last_ss.name, "annual_taxable_amount"
+
+			if last_ss and last_ss.end_date == self.payroll_period_end_date:
+				annual_taxable_amount, tax_exemption_declaration, standard_tax_exemption_amount = (
+					frappe.db.get_value(
+						"Salary Slip",
+						last_ss.name,
+						[
+							"annual_taxable_amount",
+							"tax_exemption_declaration",
+							"standard_tax_exemption_amount",
+						],
+					)
 				)
 			else:
 				future_salary_slips = self.future_salary_slips.get(employee, [])
 				if future_salary_slips:
-					total_taxable_amount = future_salary_slips[-1].get("annual_taxable_amount", 0.0)
+					last_ss = future_salary_slips[-1]
+					annual_taxable_amount = last_ss.get("annual_taxable_amount", 0.0)
+					tax_exemption_declaration = last_ss.get("tax_exemption_declaration", 0.0)
+					standard_tax_exemption_amount = last_ss.get("standard_tax_exemption_amount", 0.0)
+
+			if annual_taxable_amount:
+				# Remove exemptions already factored into salary slip so that report can apply its own logic (declaration vs proof)
+				total_taxable_amount = (
+					flt(annual_taxable_amount)
+					+ flt(tax_exemption_declaration)
+					+ flt(standard_tax_exemption_amount)
+					- emp_details["total_exemption"]
+				)
+
 			emp_details["total_taxable_amount"] = total_taxable_amount
 
 	def get_applicable_tax(self):
