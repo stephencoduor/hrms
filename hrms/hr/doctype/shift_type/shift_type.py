@@ -66,8 +66,8 @@ class ShiftType(Document):
 	) -> int:
 		return (
 			(round(time_diff(shift_end, shift_start).total_seconds() / 60))
-			+ self.allow_check_out_after_shift_end_time
-			+ self.begin_check_in_before_shift_start_time
+			+ (self.allow_check_out_after_shift_end_time or 0)
+			+ (self.begin_check_in_before_shift_start_time or 0)
 		)
 
 	def get_max_shift_buffer_label(self) -> str:
