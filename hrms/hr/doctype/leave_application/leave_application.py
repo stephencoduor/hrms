@@ -296,13 +296,14 @@ class LeaveApplication(Document, PWANotificationsMixin):
 				if doc.leave_application
 				else "Present"
 			)
+			modify_half_day_status = 1 if doc.status == "Absent" and status == "Half Day" else 0
 			doc.db_set(
 				{
 					"status": status,
 					"leave_type": self.leave_type,
 					"leave_application": self.name,
 					"half_day_status": half_day_status,
-					"modify_half_day_status": 1,
+					"modify_half_day_status": modify_half_day_status,
 				}
 			)
 		else:
@@ -316,7 +317,7 @@ class LeaveApplication(Document, PWANotificationsMixin):
 			doc.leave_application = self.name
 			doc.status = status
 			doc.half_day_status = "Present" if status == "Half Day" else None
-			doc.modify_half_day_status = 1
+			doc.modify_half_day_status = 1 if status == "Half Day" else 0
 			doc.flags.ignore_validate = True
 			doc.insert(ignore_permissions=True)
 			doc.submit()
