@@ -146,6 +146,7 @@ class ShiftType(Document):
 		for batch in create_batch(assigned_employees, EMPLOYEE_CHUNK_SIZE):
 			for employee in batch:
 				self.mark_absent_for_dates_with_no_attendance(employee)
+				self.mark_absent_for_half_day_dates(employee)
 
 			frappe.db.commit()  # nosemgrep
 
@@ -343,6 +344,32 @@ class ShiftType(Document):
 		if is_holiday(holiday_list, attendance_date):
 			return False
 		return True
+
+	def mark_absent_for_half_day_dates(self, employee):
+		half_day_attendances = frappe.get_all(
+			"Attendance",
+			filters={"employee": employee, "status": "Half Day", "modify_half_day_status": 1},
+			fields=["name", "attendance_date"],
+		)
+		start_time = get_time(self.start_time)
+		for attendance in half_day_attendances:
+			timestamp = datetime.combine(attendance.attendance_date, start_time)
+			shift_details = get_employee_shift(employee, timestamp, True)
+			if shift_details and shift_details.shift_type.name == self.name:
+				frappe.db.set_value(
+					"Attendance", attendance.name, {"half_day_status": "Absent", "modify_half_day_status": 0}
+				)
+				frappe.get_doc(
+					{
+						"doctype": "Comment",
+						"comment_type": "Comment",
+						"reference_doctype": "Attendance",
+						"reference_name": attendance.name,
+						"content": frappe._(
+							"Employee was marked Absent for other half due to missing Employee Checkins."
+						),
+					}
+				).insert(ignore_permissions=True)
 
 
 def update_last_sync_of_checkin():

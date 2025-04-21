@@ -318,7 +318,7 @@ class LeaveApplication(Document, PWANotificationsMixin):
 			doc.status = status
 			doc.half_day_status = "Present" if status == "Half Day" else None
 			doc.modify_half_day_status = 1 if status == "Half Day" else 0
-			doc.flags.ignore_validate = True
+			doc.flags.ignore_validate = True  # ignores check leave record validation in attendance
 			doc.insert(ignore_permissions=True)
 			doc.submit()
 

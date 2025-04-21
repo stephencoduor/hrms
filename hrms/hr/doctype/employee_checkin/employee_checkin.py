@@ -230,13 +230,13 @@ def mark_attendance_and_link_log(
 					"Attendance",
 					attendance.name,
 					{
-						"half_day_status": "Present",
 						"working_hours": working_hours,
 						"shift": shift,
 						"late_entry": late_entry,
 						"early_exit": early_exit,
 						"in_time": in_time,
 						"out_time": out_time,
+						"modify_half_day_status": 0,
 					},
 				)
 			else:
