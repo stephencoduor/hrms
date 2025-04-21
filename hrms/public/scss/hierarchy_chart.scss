@@ -311,15 +311,15 @@
 
 [data-theme="dark"] {
 	.node-card {
-		background-color: #232323 !important;
-		color: #fff !important;
+		background-color: var(--gray-800);
+		color: var(--text-on-gray);
 
 		.avatar-frame {
-			background-color: #171717 !important;
+			background-color: var(--gray-700);
 		}
 
-		.es-icon {
-			stroke: #171717 !important;
+		.node-edit-icon > .icon {
+			fill: var(--gray-700);
 		}
 	}
 }
