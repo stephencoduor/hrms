@@ -279,7 +279,7 @@ def get_existing_half_day_attendance(employee, attendance_date):
 			"employee": employee,
 			"attendance_date": attendance_date,
 			"status": "Half Day",
-			"half_day_status": "Absent",
+			"modify_half_day_status": 1,
 		},
 	)
 
