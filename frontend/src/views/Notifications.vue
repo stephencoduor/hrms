@@ -14,7 +14,7 @@
 							>
 								<FeatherIcon name="chevron-left" class="h-5 w-5" />
 							</Button>
-							<h2 class="text-xl font-semibold text-gray-900">Notifications</h2>
+							<h2 class="text-xl font-semibold text-gray-900">{{ __("Notifications") }} </h2>
 						</div>
 					</header>
 
@@ -24,7 +24,7 @@
 								class="text-lg text-gray-800 font-semibold"
 								v-if="unreadNotificationsCount.data"
 							>
-								{{ unreadNotificationsCount.data }} Unread
+								{{ __("{0} Unread", [unreadNotificationsCount.data]) }}
 							</div>
 							<div class="flex ml-auto gap-1">
 								<Button
@@ -35,7 +35,7 @@
 									<template #prefix>
 										<FeatherIcon name="settings" class="w-4" />
 									</template>
-									Settings
+									{{ __("Settings") }}
 								</Button>
 								<Button
 									v-if="unreadNotificationsCount.data"
@@ -46,7 +46,7 @@
 									<template #prefix>
 										<FeatherIcon name="check-circle" class="w-4" />
 									</template>
-									Mark all as read
+									{{ __("Mark all as read") }}
 								</Button>
 							</div>
 						</div>
@@ -79,7 +79,7 @@
 							</router-link>
 						</div>
 
-						<EmptyState v-else message="You have no notifications" />
+						<EmptyState v-else :message="__('You have no notifications')" />
 					</div>
 				</div>
 			</div>
@@ -102,9 +102,9 @@ import {
 	arePushNotificationsEnabled,
 } from "@/data/notifications"
 
-const user = inject("$user")
 const dayjs = inject("$dayjs")
 const router = useRouter()
+const __ = inject("$translate")
 
 const allowPushNotifications = computed(
 	() =>

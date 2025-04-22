@@ -7,18 +7,29 @@ from frappe import _
 from frappe.model.document import Document
 from frappe.utils import cint, get_datetime
 
-from hrms.hr.doctype.shift_assignment.shift_assignment import (
-	get_actual_start_end_datetime_of_shift,
+from hrms.hr.doctype.shift_assignment.shift_assignment import get_actual_start_end_datetime_of_shift
+from hrms.hr.utils import (
+	get_distance_between_coordinates,
+	set_geolocation_from_coordinates,
+	validate_active_employee,
 )
-from hrms.hr.utils import validate_active_employee
+
+
+class CheckinRadiusExceededError(frappe.ValidationError):
+	pass
 
 
 class EmployeeCheckin(Document):
+	def before_validate(self):
+		self.time = get_datetime(self.time).replace(microsecond=0)
+
 	def validate(self):
 		validate_active_employee(self.employee)
 		self.validate_duplicate_log()
+		self.validate_time_change()
 		self.fetch_shift()
-		self.set_geolocation_from_coordinates()
+		self.set_geolocation()
+		self.validate_distance_from_shift_location()
 
 	def validate_duplicate_log(self):
 		doc = frappe.db.exists(
@@ -36,6 +47,19 @@ class EmployeeCheckin(Document):
 				_("This employee already has a log with the same timestamp.{0}").format("<Br>" + doc_link)
 			)
 
+	def validate_time_change(self):
+		if self.attendance and self.has_value_changed("time"):
+			frappe.throw(
+				title=_("Cannot Modify Time"),
+				msg=_(
+					"An attendance record is linked to this checkin. Please cancel the attendance before modifying time."
+				),
+			)
+
+	@frappe.whitelist()
+	def set_geolocation(self):
+		set_geolocation_from_coordinates(self)
+
 	@frappe.whitelist()
 	def fetch_shift(self):
 		if not (
@@ -44,6 +68,7 @@ class EmployeeCheckin(Document):
 			)
 		):
 			self.shift = None
+			self.offshift = 1
 			return
 
 		if (
@@ -58,33 +83,48 @@ class EmployeeCheckin(Document):
 				)
 			)
 		if not self.attendance:
+			self.offshift = 0
 			self.shift = shift_actual_timings.shift_type.name
 			self.shift_actual_start = shift_actual_timings.actual_start
 			self.shift_actual_end = shift_actual_timings.actual_end
 			self.shift_start = shift_actual_timings.start_datetime
 			self.shift_end = shift_actual_timings.end_datetime
 
-	@frappe.whitelist()
-	def set_geolocation_from_coordinates(self):
+	def validate_distance_from_shift_location(self):
 		if not frappe.db.get_single_value("HR Settings", "allow_geolocation_tracking"):
 			return
 
-		if not (self.latitude and self.longitude):
+		if not (self.latitude or self.longitude):
+			frappe.throw(_("Latitude and longitude values are required for checking in."))
+
+		assignment_locations = frappe.get_all(
+			"Shift Assignment",
+			filters={
+				"employee": self.employee,
+				"shift_type": self.shift,
+				"start_date": ["<=", self.time],
+				"shift_location": ["is", "set"],
+				"docstatus": 1,
+				"status": "Active",
+			},
+			or_filters=[["end_date", ">=", self.time], ["end_date", "is", "not set"]],
+			pluck="shift_location",
+		)
+		if not assignment_locations:
 			return
 
-		self.geolocation = frappe.json.dumps(
-			{
-				"type": "FeatureCollection",
-				"features": [
-					{
-						"type": "Feature",
-						"properties": {},
-						# geojson needs coordinates in reverse order: long, lat instead of lat, long
-						"geometry": {"type": "Point", "coordinates": [self.longitude, self.latitude]},
-					}
-				],
-			}
+		checkin_radius, latitude, longitude = frappe.db.get_value(
+			"Shift Location", assignment_locations[0], ["checkin_radius", "latitude", "longitude"]
 		)
+		if checkin_radius <= 0:
+			return
+
+		distance = get_distance_between_coordinates(latitude, longitude, self.latitude, self.longitude)
+		if distance > checkin_radius:
+			frappe.throw(
+				_("You must be within {0} meters of your shift location to check in.").format(checkin_radius),
+				exc=CheckinRadiusExceededError,
+			)
 
 
 @frappe.whitelist()
@@ -95,6 +135,8 @@ def add_log_based_on_employee_field(
 	log_type=None,
 	skip_auto_attendance=0,
 	employee_fieldname="attendance_device_id",
+	latitude=None,
+	longitude=None,
 ):
 	"""Finds the relevant Employee using the employee field value and creates a Employee Checkin.
 
@@ -104,6 +146,8 @@ def add_log_based_on_employee_field(
 	:param log_type: (optional)Direction of the Punch if available (IN/OUT).
 	:param skip_auto_attendance: (optional)Skip auto attendance field will be set for this log(0/1).
 	:param employee_fieldname: (Default: attendance_device_id)Name of the field in Employee DocType based on which employee lookup will happen.
+	:latitude: (optional) Latitude of the shift location.
+	:longitude: (optional) Longitude of the shift location.
 	"""
 
 	if not employee_field_value or not timestamp:
@@ -130,6 +174,8 @@ def add_log_based_on_employee_field(
 	doc.time = timestamp
 	doc.device_id = device_id
 	doc.log_type = log_type
+	doc.latitude = latitude
+	doc.longitude = longitude
 	if cint(skip_auto_attendance) == 1:
 		doc.skip_auto_attendance = "1"
 	doc.insert()
@@ -177,21 +223,39 @@ def mark_attendance_and_link_log(
 	elif attendance_status in ("Present", "Absent", "Half Day"):
 		try:
 			frappe.db.savepoint("attendance_creation")
-			attendance = frappe.new_doc("Attendance")
-			attendance.update(
-				{
-					"doctype": "Attendance",
-					"employee": employee,
-					"attendance_date": attendance_date,
-					"status": attendance_status,
-					"working_hours": working_hours,
-					"shift": shift,
-					"late_entry": late_entry,
-					"early_exit": early_exit,
-					"in_time": in_time,
-					"out_time": out_time,
-				}
-			).submit()
+			if attendance_status == "Half Day" and (
+				attendance := get_existing_half_day_attendance(employee, attendance_date)
+			):
+				frappe.db.set_value(
+					"Attendance",
+					attendance.name,
+					{
+						"half_day_status": "Present",
+						"working_hours": working_hours,
+						"shift": shift,
+						"late_entry": late_entry,
+						"early_exit": early_exit,
+						"in_time": in_time,
+						"out_time": out_time,
+					},
+				)
+			else:
+				attendance = frappe.new_doc("Attendance")
+				attendance.update(
+					{
+						"doctype": "Attendance",
+						"employee": employee,
+						"attendance_date": attendance_date,
+						"status": attendance_status,
+						"working_hours": working_hours,
+						"shift": shift,
+						"late_entry": late_entry,
+						"early_exit": early_exit,
+						"in_time": in_time,
+						"out_time": out_time,
+						"half_day_status": "Absent" if attendance_status == "Half Day" else None,
+					}
+				).submit()
 
 			if attendance_status == "Absent":
 				attendance.add_comment(
@@ -206,6 +270,23 @@ def mark_attendance_and_link_log(
 
 	else:
 		frappe.throw(_("{} is an invalid Attendance Status.").format(attendance_status))
+
+
+def get_existing_half_day_attendance(employee, attendance_date):
+	attendance_name = frappe.db.exists(
+		"Attendance",
+		{
+			"employee": employee,
+			"attendance_date": attendance_date,
+			"status": "Half Day",
+			"half_day_status": "Absent",
+		},
+	)
+
+	if attendance_name:
+		attendance_doc = frappe.get_doc("Attendance", attendance_name)
+		return attendance_doc
+	return None
 
 
 def calculate_working_hours(logs, check_in_out_type, working_hours_calc_type):
@@ -241,8 +322,9 @@ def calculate_working_hours(logs, check_in_out_type, working_hours_calc_type):
 				if last_out_log_index or last_out_log_index == 0
 				else None
 			)
+			in_time = getattr(first_in_log, "time", None)
+			out_time = getattr(last_out_log, "time", None)
 			if first_in_log and last_out_log:
-				in_time, out_time = first_in_log.time, last_out_log.time
 				total_hours = time_diff_in_hours(in_time, out_time)
 		elif working_hours_calc_type == "Every Valid Check-in and Check-out":
 			in_log = out_log = None

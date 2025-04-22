@@ -3,7 +3,7 @@
 		ref="autocompleteRef"
 		size="sm"
 		v-model="value"
-		:placeholder="`Select ${doctype}`"
+		:placeholder="__('Select {0}', [__(doctype)])"
 		:options="options.data"
 		:class="disabled ? 'pointer-events-none' : ''"
 		:disabled="disabled"
@@ -79,7 +79,7 @@ const reloadOptions = (searchTextVal) => {
 const handleQueryUpdate = debounce((newQuery) => {
 	const val = newQuery || ""
 	if (searchText.value === val) return
-	searchText.val = val
+	searchText.value = val
 	reloadOptions(val)
 }, 300)
 
