@@ -454,7 +454,7 @@ class IncomeTaxComputationReport:
 			else:
 				future_salary_slips = self.future_salary_slips.get(employee, [])
 				if future_salary_slips:
-					last_ss = future_salary_slips[-1]
+					last_ss = future_salary_slips[0]
 					annual_taxable_amount = last_ss.get("annual_taxable_amount", 0.0)
 					tax_exemption_declaration = last_ss.get("tax_exemption_declaration", 0.0)
 					standard_tax_exemption_amount = last_ss.get("standard_tax_exemption_amount", 0.0)
