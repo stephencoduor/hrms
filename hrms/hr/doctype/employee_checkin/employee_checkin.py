@@ -223,9 +223,7 @@ def mark_attendance_and_link_log(
 	elif attendance_status in ("Present", "Absent", "Half Day"):
 		try:
 			frappe.db.savepoint("attendance_creation")
-			if attendance_status in ("Half Day", "Absent") and (
-				attendance := get_existing_half_day_attendance(employee, attendance_date)
-			):
+			if attendance := get_existing_half_day_attendance(employee, attendance_date):
 				frappe.db.set_value(
 					"Attendance",
 					attendance.name,
