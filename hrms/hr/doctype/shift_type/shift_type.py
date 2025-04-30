@@ -357,7 +357,9 @@ class ShiftType(Document):
 			shift_details = get_employee_shift(employee, timestamp, True)
 			if shift_details and shift_details.shift_type.name == self.name:
 				frappe.db.set_value(
-					"Attendance", attendance.name, {"half_day_status": "Absent", "modify_half_day_status": 0}
+					"Attendance",
+					attendance.name,
+					{"shift": self.name, "half_day_status": "Absent", "modify_half_day_status": 0},
 				)
 				frappe.get_doc(
 					{
