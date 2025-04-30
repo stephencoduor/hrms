@@ -760,6 +760,119 @@ class TestEmployeeCheckin(FrappeTestCase):
 		self.assertEqual(attendance[0].shift, shift.name)
 		self.assertEqual(attendance[0].modify_half_day_status, 0)
 
+	def test_half_day_attendance_when_checkins_exists_but_threshold_is_unmet(self):
+		shift = setup_shift_type(
+			shift_type="_Test Half Day",
+			start_time="08:00:00",
+			end_time="15:00:00",
+			working_hours_threshold_for_half_day=4,
+			working_hours_threshold_for_absent=2,
+		)
+		emp = make_employee("testhalfday3@example.com", company="_Test Company", default_shift=shift.name)
+		employee = frappe.get_doc("Employee", emp)
+		# create attendance from leave
+		leave_type = create_leave_type(leave_type_name="_Test Half Day", include_holidays=0)
+		create_leave_allocation(
+			employee=employee,
+			leave_type=leave_type,
+			from_date=add_days(nowdate(), -2),
+			to_date=add_days(nowdate(), 30),
+			new_leaves_allocated=15,
+		)
+		make_leave_application(
+			leave_type=leave_type.name,
+			employee=emp,
+			from_date=nowdate(),
+			to_date=nowdate(),
+			half_day=1,
+			half_day_date=nowdate(),
+		)
+		in_time = datetime.combine(getdate(), get_time("08:00:00"))
+		out_time = datetime.combine(getdate(), get_time("09:00:00"))
+		in_log = make_checkin(emp, in_time)
+		out_log = make_checkin(emp, out_time)
+		shift.process_auto_attendance()
+
+		attendance = frappe.get_all(
+			"Attendance",
+			filters={"leave_type": leave_type.name, "employee": emp, "attendance_date": nowdate()},
+			fields=[
+				"name",
+				"status",
+				"half_day_status",
+				"shift",
+				"working_hours",
+				"in_time",
+				"out_time",
+				"modify_half_day_status",
+			],
+		)
+		self.assertEqual(len(attendance), 1)
+		self.assertEqual(attendance[0].status, "Half Day")
+		self.assertEqual(attendance[0].half_day_status, "Absent")
+		self.assertEqual(attendance[0].shift, shift.name)
+		self.assertEqual(attendance[0].modify_half_day_status, 0)
+		self.assertEqual(attendance[0].working_hours, 1)
+		self.assertEqual(attendance[0].in_time, in_log.time)
+		self.assertEqual(attendance[0].out_time, out_log.time)
+
+	def test_half_day_attendance_when_employee_checkins_exists_and_attendance_is_full_day(self):
+		shift = setup_shift_type(
+			shift_type="_Test Half Day",
+			start_time="08:00:00",
+			end_time="15:00:00",
+			working_hours_threshold_for_half_day=4,
+			working_hours_threshold_for_absent=2,
+		)
+		emp = make_employee("testhalfday4@example.com", company="_Test Company", default_shift=shift.name)
+		employee = frappe.get_doc("Employee", emp)
+		# create attendance from leave
+		leave_type = create_leave_type(leave_type_name="_Test Half Day", include_holidays=0)
+		create_leave_allocation(
+			employee=employee,
+			leave_type=leave_type,
+			from_date=add_days(nowdate(), -2),
+			to_date=add_days(nowdate(), 30),
+			new_leaves_allocated=15,
+		)
+		make_leave_application(
+			leave_type=leave_type.name,
+			employee=emp,
+			from_date=nowdate(),
+			to_date=nowdate(),
+			half_day=1,
+			half_day_date=nowdate(),
+		)
+		in_time = datetime.combine(getdate(), get_time("08:00:00"))
+		out_time = datetime.combine(getdate(), get_time("15:00:00"))
+		in_log = make_checkin(emp, in_time)
+		out_log = make_checkin(emp, out_time)
+		shift.process_auto_attendance()
+
+		attendance = frappe.get_all(
+			"Attendance",
+			filters={"leave_type": leave_type.name, "employee": emp, "attendance_date": nowdate()},
+			fields=[
+				"name",
+				"status",
+				"half_day_status",
+				"shift",
+				"working_hours",
+				"in_time",
+				"out_time",
+				"modify_half_day_status",
+			],
+		)
+		# status would remain same for half day but the shift details should be captured as is
+		self.assertEqual(len(attendance), 1)
+		self.assertEqual(attendance[0].status, "Half Day")
+		self.assertEqual(attendance[0].half_day_status, "Present")
+		self.assertEqual(attendance[0].shift, shift.name)
+		self.assertEqual(attendance[0].modify_half_day_status, 0)
+		self.assertEqual(attendance[0].working_hours, 7)
+		self.assertEqual(attendance[0].in_time, in_log.time)
+		self.assertEqual(attendance[0].out_time, out_log.time)
+
 
 def make_n_checkins(employee, n, hours_to_reverse=1):
 	logs = [make_checkin(employee, now_datetime() - timedelta(hours=hours_to_reverse, minutes=n + 1))]
