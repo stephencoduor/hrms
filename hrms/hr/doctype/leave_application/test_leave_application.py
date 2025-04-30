@@ -1340,13 +1340,14 @@ class TestLeaveApplication(FrappeTestCase):
 		attendance = frappe.get_value(
 			"Attendance",
 			attendance_name,
-			["status", "half_day_status", "leave_type", "leave_application"],
+			["status", "half_day_status", "leave_type", "leave_application", "modify_half_day_status"],
 			as_dict=True,
 		)
 		self.assertEqual(attendance.status, "Half Day")
-		self.assertEqual(attendance.half_day_status, "Absent")
+		self.assertEqual(attendance.half_day_status, "Present")
 		self.assertEqual(attendance.leave_type, leave_type.name)
 		self.assertEqual(attendance.leave_application, leave_application.name)
+		self.assertEqual(attendance.modify_half_day_status, 1)
 
 	def test_half_day_status_for_two_half_leaves(self):
 		employee = get_employee()
