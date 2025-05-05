@@ -96,9 +96,9 @@ def mark_employee_attendance(
 	late_entry: int | None = None,
 	early_exit: int | None = None,
 	shift: str | None = None,
-	mark_half_day=False,
-	half_day_status=None,
-	half_day_employee_list=None,
+	mark_half_day: bool | None = False,
+	half_day_status: str | None = None,
+	half_day_employee_list: list | str | None = None,
 ) -> None:
 	if isinstance(employee_list, str):
 		employee_list = json.loads(employee_list)
