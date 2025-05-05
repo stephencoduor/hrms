@@ -36,6 +36,7 @@ class TestIncomeTaxDeductions(FrappeTestCase):
 		)
 
 		cls.payroll_period = create_payroll_period(name="_Test Payroll Period 1", company="_Test Company")
+		frappe.db.set_single_value("Payroll Settings", "consider_unmarked_attendance_as", "Present")
 		salary_structure = make_salary_structure(
 			"Monthly Salary Structure Test Income Tax Deduction",
 			"Monthly",
@@ -58,7 +59,7 @@ class TestIncomeTaxDeductions(FrappeTestCase):
 			"employee_name": "test_tax_deductions@example.com",
 			"it_comp": "TDS",
 			"posting_date": posting_date,
-			"it_amount": 7732.0,
+			"it_amount": 6964.0,
 			"gross_pay": 78000.0,
 			"pan_number": None,
 		}
