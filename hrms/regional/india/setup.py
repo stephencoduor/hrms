@@ -233,7 +233,7 @@ def get_custom_fields():
 		"Income Tax Slab": [
 			{
 				"fieldname": "marginal_relief_limit",
-				"label": "Marginal Relief Income Threshold",
+				"label": "Marginal Relief Threshold Limit",
 				"fieldtype": "Currency",
 				"description": "Maximum taxable income for which marginal relief can be applied. Beyond this limit, normal tax slabs are used for tax calculation.",
 				"insert_after": "column_break_pdmy",

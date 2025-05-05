@@ -113,7 +113,7 @@
    "description": "Maximum annual taxable income eligible for full tax relief. No tax is applied if income does not exceed this limit",
    "fieldname": "tax_relief_limit",
    "fieldtype": "Currency",
-   "label": "Taxable Income Relief Threshold"
+   "label": "Taxable Income Relief Threshold Limit"
   },
   {
    "fieldname": "section_break_cajo",
@@ -127,10 +127,14 @@
  "is_submittable": 1,
  "links": [],
 <<<<<<< HEAD
+<<<<<<< HEAD
  "modified": "2023-04-30 15:01:22.706198",
 =======
  "modified": "2025-05-02 03:37:39.606769",
 >>>>>>> dc4e6b17 (feat: add Taxable Income Relief Threshold Limit field to income tax slab)
+=======
+ "modified": "2025-05-05 22:16:48.257971",
+>>>>>>> bc99c95c (chore: edit field labels)
  "modified_by": "Administrator",
  "module": "Payroll",
  "name": "Income Tax Slab",
