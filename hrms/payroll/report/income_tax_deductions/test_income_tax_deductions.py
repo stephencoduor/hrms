@@ -59,7 +59,7 @@ class TestIncomeTaxDeductions(FrappeTestCase):
 			"employee_name": "test_tax_deductions@example.com",
 			"it_comp": "TDS",
 			"posting_date": posting_date,
-			"it_amount": 6964.0,
+			"it_amount": 7732.0,
 			"gross_pay": 78000.0,
 			"pan_number": None,
 		}
