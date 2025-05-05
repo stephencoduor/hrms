@@ -96,6 +96,9 @@ def mark_employee_attendance(
 	late_entry: int | None = None,
 	early_exit: int | None = None,
 	shift: str | None = None,
+	mark_half_day=False,
+	half_day_status=None,
+	half_day_employee_list=None,
 ) -> None:
 	if isinstance(employee_list, str):
 		employee_list = json.loads(employee_list)
@@ -119,28 +122,21 @@ def mark_employee_attendance(
 		)
 		attendance.insert()
 		attendance.submit()
+	if mark_half_day:
+		if isinstance(half_day_employee_list, str):
+			half_day_employee_list = json.loads(half_day_employee_list)
 
-
-@frappe.whitelist()
-def update_half_day_attendance(
-	employee_list: list | str,
-	date: str | datetime.date,
-	late_entry: int | None = None,
-	early_exit: int | None = None,
-	shift: str | None = None,
-	half_day_status: str | None = None,
-) -> None:
-	if isinstance(employee_list, str):
-		employee_list = json.loads(employee_list)
-
-	for employee in employee_list:
-		frappe.db.set_value(
-			"Attendance", {"employee": employee, "attendance_date": date}, "half_day_status", half_day_status
-		)
-		frappe.db.set_value(
-			"Attendance", {"employee": employee, "attendance_date": date}, "late_entry", late_entry
-		)
-		frappe.db.set_value(
-			"Attendance", {"employee": employee, "attendance_date": date}, "early_exit", early_exit
-		)
-		frappe.db.set_value("Attendance", {"employee": employee, "attendance_date": date}, "shift", shift)
+		for employee in half_day_employee_list:
+			frappe.db.set_value(
+				"Attendance",
+				{"employee": employee, "attendance_date": date},
+				"half_day_status",
+				half_day_status,
+			)
+			frappe.db.set_value(
+				"Attendance", {"employee": employee, "attendance_date": date}, "late_entry", late_entry
+			)
+			frappe.db.set_value(
+				"Attendance", {"employee": employee, "attendance_date": date}, "early_exit", early_exit
+			)
+			frappe.db.set_value("Attendance", {"employee": employee, "attendance_date": date}, "shift", shift)

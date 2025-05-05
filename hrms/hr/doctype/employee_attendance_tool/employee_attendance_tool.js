@@ -336,15 +336,20 @@ frappe.ui.form.on("Employee Attendance Tool", {
 					title: __("Mandatory"),
 				});
 			}
-			if (selected_employees_to_mark_full_day.length > 0) {
-				frm.events.mark_full_day_attendance(frm, selected_employees_to_mark_full_day);
+			if (
+				selected_employees_to_mark_full_day.length > 0 ||
+				selected_employees_to_mark_half_day > 0
+			) {
+				frm.events.mark_full_day_attendance(
+					frm,
+					selected_employees_to_mark_full_day,
+					selected_employees_to_mark_half_day,
+				);
 			}
-			if (selected_employees_to_mark_half_day.length > 0)
-				frm.events.update_half_day_attendance(frm, selected_employees_to_mark_half_day);
 		});
 	},
 
-	mark_full_day_attendance(frm, employees_to_mark_full_day) {
+	mark_full_day_attendance(frm, employees_to_mark_full_day, employees_to_mark_half_day) {
 		frappe
 			.call({
 				method: "hrms.hr.doctype.employee_attendance_tool.employee_attendance_tool.mark_employee_attendance",
@@ -355,6 +360,9 @@ frappe.ui.form.on("Employee Attendance Tool", {
 					late_entry: frm.doc.late_entry,
 					early_exit: frm.doc.early_exit,
 					shift: frm.doc.shift,
+					mark_half_day: employees_to_mark_half_day.length ? true : false,
+					half_day_status: frm.doc.half_day_status,
+					half_day_employee_list: employees_to_mark_half_day,
 				},
 				freeze: true,
 				freeze_message: __("Marking Attendance"),
@@ -363,31 +371,6 @@ frappe.ui.form.on("Employee Attendance Tool", {
 				if (!r.exc) {
 					frappe.show_alert({
 						message: __("Attendance marked successfully"),
-						indicator: "green",
-					});
-					frm.refresh();
-				}
-			});
-	},
-	update_half_day_attendance(frm, employees_to_mark_half_day) {
-		frappe
-			.call({
-				method: "hrms.hr.doctype.employee_attendance_tool.employee_attendance_tool.update_half_day_attendance",
-				args: {
-					employee_list: employees_to_mark_half_day,
-					date: frm.doc.date,
-					late_entry: frm.doc.late_entry,
-					early_exit: frm.doc.early_exit,
-					shift: frm.doc.shift,
-					half_day_status: frm.doc.half_day_status,
-				},
-				freeze: true,
-				freeze_message: __("Marking Attendance"),
-			})
-			.then((r) => {
-				if (!r.exc) {
-					frappe.show_alert({
-						message: __("Attendance Updated successfully"),
 						indicator: "green",
 					});
 					frm.refresh();
