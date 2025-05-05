@@ -179,12 +179,8 @@
    "write": 1
   }
  ],
-<<<<<<< HEAD
- "sort_field": "modified",
-=======
  "row_format": "Dynamic",
- "sort_field": "creation",
->>>>>>> dc4e6b17 (feat: add Taxable Income Relief Threshold Limit field to income tax slab)
+ "sort_field": "creation"
  "sort_order": "DESC",
  "states": [],
  "track_changes": 1
