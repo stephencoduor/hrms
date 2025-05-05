@@ -2,13 +2,8 @@
 # See license.txt
 
 import frappe
-<<<<<<< HEAD
 from frappe.tests.utils import FrappeTestCase
-from frappe.utils import getdate
-=======
-from frappe.tests import IntegrationTestCase
 from frappe.utils import add_days, getdate
->>>>>>> dce0f9b7 (test: test get employees for half day attendance)
 
 from erpnext.setup.doctype.employee.test_employee import make_employee
 
