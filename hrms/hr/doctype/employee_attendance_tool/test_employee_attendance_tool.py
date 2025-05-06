@@ -72,31 +72,19 @@ class TestEmployeeAttendanceTool(FrappeTestCase):
 	def test_get_employees_for_half_day_attendance(self):
 		# only half day attendance created from leave type should be fetched to update in the tool
 		employee = frappe.get_doc("Employee", self.employee1)
-		leave_type = create_leave_type(leave_type="_Test Employee Attendance Tool", include_holidays=0)
-		frappe.get_doc(
-			{
-				"doctype": "Leave Allocation",
-				"employee": employee.name,
-				"employee_name": employee.employee_name,
-				"leave_type": leave_type.name,
-				"from_date": add_days(getdate(), -2),
-				"new_leaves_allocated": 15,
-				"carry_forward": 0,
-				"to_date": add_days(getdate(), 30),
-			}
-		).submit()
+		leave_type = create_leave_type(leave_type_name="_Test Employee Attendance Tool", include_holidays=0)
+		date = add_days(getdate(), -1)
+		create_leave_allocation(employee, leave_type)
 		make_leave_application(
-			employee=employee,
-			from_date=getdate(),
-			to_date=getdate(),
+			employee=employee.name,
+			from_date=date,
+			to_date=date,
 			leave_type=leave_type.name,
 			half_day=1,
-			half_day_date=getdate(),
+			half_day_date=date,
 		)
-		mark_attendance(
-			self.employee2, attendance_date=getdate(), status="Half Day", half_day_status="Absent"
-		)
-		total_employees = get_employees(getdate(), company="_Test Company")
+		mark_attendance(self.employee2, attendance_date=date, status="Half Day", half_day_status="Absent")
+		total_employees = get_employees(date, company="_Test Company")
 		half_marked_employees = total_employees.get("half_day_marked")
 		self.assertEqual(len(half_marked_employees), 1)
 		self.assertEqual(half_marked_employees[0].get("employee_name"), employee.employee_name)
@@ -107,12 +95,12 @@ class TestEmployeeAttendanceTool(FrappeTestCase):
 		)
 		employee4 = frappe.get_doc("Employee", self.employee4)
 		employee2 = frappe.get_doc("Employee", self.employee2)
-		leave_type = create_leave_type(leave_type="_Test Employee Attendance Tool", include_holidays=0)
+		leave_type = create_leave_type(leave_type_name="_Test Employee Attendance Tool", include_holidays=0)
 		date = add_days(getdate(), -1)
 		create_leave_allocation(employee2, leave_type)
 		create_leave_allocation(employee4, leave_type)
 		make_leave_application(
-			employee=employee2,
+			employee=employee2.name,
 			from_date=date,
 			to_date=date,
 			leave_type=leave_type.name,
@@ -120,7 +108,7 @@ class TestEmployeeAttendanceTool(FrappeTestCase):
 			half_day_date=date,
 		)
 		make_leave_application(
-			employee=employee4,
+			employee=employee4.name,
 			from_date=date,
 			to_date=date,
 			leave_type=leave_type.name,
@@ -162,7 +150,7 @@ def create_leave_allocation(employee, leave_type):
 			"employee": employee.name,
 			"employee_name": employee.employee_name,
 			"leave_type": leave_type.name,
-			"from_date": add_days(getdate(), -2),
+			"from_date": add_days(getdate(), -5),
 			"new_leaves_allocated": 15,
 			"carry_forward": 0,
 			"to_date": add_days(getdate(), 30),
