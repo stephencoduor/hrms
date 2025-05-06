@@ -132,7 +132,6 @@ class TestEmployeeAttendanceTool(FrappeTestCase):
 			filters={"attendance_date": date},
 			fields=["employee", "status", "half_day_status", "shift", "late_entry", "early_exit"],
 		)
-		print(attendances)
 		self.assertEqual(len(attendances), 4)
 		for attendance in attendances:
 			if attendance.get("employee") in (self.employee1, self.employee3):
