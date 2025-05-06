@@ -96,7 +96,7 @@ class TestEmployeeAttendanceTool(FrappeTestCase):
 		employee4 = frappe.get_doc("Employee", self.employee4)
 		employee2 = frappe.get_doc("Employee", self.employee2)
 		leave_type = create_leave_type(leave_type_name="_Test Employee Attendance Tool", include_holidays=0)
-		date = add_days(getdate(), -1)
+		date = add_days(getdate(), 1)
 		create_leave_allocation(employee2, leave_type)
 		create_leave_allocation(employee4, leave_type)
 		make_leave_application(
@@ -132,6 +132,7 @@ class TestEmployeeAttendanceTool(FrappeTestCase):
 			filters={"attendance_date": date},
 			fields=["employee", "status", "half_day_status", "shift", "late_entry", "early_exit"],
 		)
+		print(attendances)
 		self.assertEqual(len(attendances), 4)
 		for attendance in attendances:
 			if attendance.get("employee") in (self.employee1, self.employee3):
