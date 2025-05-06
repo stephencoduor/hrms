@@ -60,7 +60,7 @@ def get_employees(
 		filters={
 			"attendance_date": date,
 			"docstatus": 1,
-			"half_day_status": "Absent",
+			"modify_half_day_status": 1,
 			"leave_type": ("is", "set"),
 		},
 		order_by="employee_name",
