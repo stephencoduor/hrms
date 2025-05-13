@@ -42,6 +42,7 @@ frappe.ui.form.on("Employee Attendance Tool", {
 		frm.set_value("shift", "");
 		frm.set_value("late_entry", 0);
 		frm.set_value("early_exit", 0);
+		frm.set_value("half_day_status", "");
 	},
 
 	load_employees(frm) {
