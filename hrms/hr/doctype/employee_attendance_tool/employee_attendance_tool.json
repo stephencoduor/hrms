@@ -77,8 +77,7 @@
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Status",
-   "options": "\nPresent\nAbsent\nHalf Day\nWork From Home",
-   "reqd": 1
+   "options": "\nPresent\nAbsent\nHalf Day\nWork From Home"
   },
   {
    "collapsible": 1,
@@ -156,15 +155,14 @@
    "fieldname": "half_day_status",
    "fieldtype": "Select",
    "label": "Status for Other Half",
-   "options": "Present\nAbsent",
-   "reqd": 1
+   "options": "Present\nAbsent"
   }
  ],
  "grid_page_length": 50,
  "hide_toolbar": 1,
  "issingle": 1,
  "links": [],
- "modified": "2025-05-05 10:44:35.922422",
+ "modified": "2025-05-13 14:19:39.329723",
  "modified_by": "Administrator",
  "module": "HR",
  "name": "Employee Attendance Tool",

@@ -24,7 +24,7 @@ frappe.ui.form.on("Employee Attendance Tool", {
 	company(frm) {
 		frm.trigger("load_employees");
 	},
-	employement_type(frm) {
+	employment_type(frm) {
 		frm.trigger("load_employees");
 	},
 	designation(frm) {
@@ -54,12 +54,12 @@ frappe.ui.form.on("Employee Attendance Tool", {
 					department: frm.doc.department,
 					branch: frm.doc.branch,
 					company: frm.doc.company,
-					employment_type: frm.employement_type,
+					employment_type: frm.doc.employment_type,
 					designation: frm.doc.designation,
 					employee_grade: frm.doc.employee_grade,
 				},
 				freeze: true,
-				freeze_message: __("...Feching Employees"),
+				freeze_message: __("...Fetching Employees"),
 			})
 			.then((r) => {
 				frm.no_employees_to_mark =
@@ -132,6 +132,7 @@ frappe.ui.form.on("Employee Attendance Tool", {
 		});
 		if (!frm.get_field(datatable_name)) {
 			const datatable_options = {
+				name: datatable_name,
 				columns: columns,
 				data: data,
 				checkboxColumn: true,
@@ -143,6 +144,20 @@ frappe.ui.form.on("Employee Attendance Tool", {
 				cellHeight: 35,
 				noDataMessage: __(no_data_message),
 				disableReorderColumn: true,
+				events: {
+					onCheckRow: function (row) {
+						let datatable = this.options.name;
+						let check_map = this.rowmanager.checkMap.find(
+							(is_checked) => is_checked === 1,
+						);
+						if (datatable === "unmarked_employees_table") {
+							frm.set_df_property("status", "reqd", check_map);
+						}
+						if (datatable === "half_marked_employees_table") {
+							frm.set_df_property("half_day_status", "reqd", check_map);
+						}
+					},
+				},
 			};
 			frm.fields_dict[datatable_name] = new frappe.DataTable(
 				employee_wrapper.get(0),
@@ -339,7 +354,7 @@ frappe.ui.form.on("Employee Attendance Tool", {
 			}
 			if (
 				selected_employees_to_mark_full_day.length > 0 ||
-				selected_employees_to_mark_half_day > 0
+				selected_employees_to_mark_half_day.length > 0
 			) {
 				frm.events.mark_full_day_attendance(
 					frm,
