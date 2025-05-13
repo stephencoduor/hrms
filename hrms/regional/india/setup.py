@@ -237,7 +237,7 @@ def get_custom_fields():
 				"fieldtype": "Currency",
 				"description": "Maximum taxable income for which marginal relief can be applied. Beyond this limit, normal tax slabs are used for tax calculation.",
 				"insert_after": "column_break_pdmy",
-				"depends_on": "eval:doc.tax_relief_limit > 0",
+				"depends_on": "eval:doc.tax_relief_limit > 0 && doc.currency == 'INR'",
 			}
 		],
 	}
