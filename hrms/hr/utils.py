@@ -933,6 +933,6 @@ def get_exact_month_diff(string_ed_date: DateTimeLikeObject, string_st_date: Dat
 	# count the last month only if end date's day > start date's day
 	# to handle cases like 16th Jul 2024 - 15th Jul 2025
 	# where framework's month_diff will calculate diff as 13 months
-	if ed_date.day > st_date.day:
+	if ed_date.day >= st_date.day:
 		diff += 1
 	return diff
