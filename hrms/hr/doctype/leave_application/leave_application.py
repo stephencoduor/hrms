@@ -287,15 +287,7 @@ class LeaveApplication(Document, PWANotificationsMixin):
 		if attendance_name:
 			# update existing attendance, change absent to on leave or half day
 			doc = frappe.get_doc("Attendance", attendance_name)
-			half_day_status = (
-				None
-				if status == "On Leave"
-				else "Absent"
-				if (doc.status == "Absent" and status == "Half Day")
-				else doc.half_day_status
-				if doc.leave_application
-				else "Present"
-			)
+			half_day_status = None if status == "On Leave" else "Present"
 			modify_half_day_status = 1 if doc.status == "Absent" and status == "Half Day" else 0
 			doc.db_set(
 				{
