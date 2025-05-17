@@ -260,7 +260,6 @@ def add_attendance(filters):
 		fields=[
 			"name",
 			"'Attendance' as doctype",
-			#"attendance_date as start",
 			"attendance_date",
 			"employee_name",
 			"status",
@@ -282,8 +281,7 @@ def add_holidays(events, start, end, employee=None):
 		events.append(
 			{
 				"doctype": "Holiday",
-				"start": holiday.holiday_date,
-				"end": holiday.holiday_date,
+				"attendance_date": holiday.holiday_date,
 				"title": _("Holiday") + ": " + cstr(holiday.description),
 				"name": holiday.name,
 				"allDay": 1,
