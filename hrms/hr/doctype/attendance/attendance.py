@@ -260,8 +260,8 @@ def add_attendance(filters):
 		fields=[
 			"name",
 			"'Attendance' as doctype",
-			"attendance_date as start",
-			"attendance_date as end",
+			#"attendance_date as start",
+			"attendance_date",
 			"employee_name",
 			"status",
 			"docstatus",
