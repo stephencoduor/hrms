@@ -35,7 +35,11 @@
 </template>
 
 <script setup>
+<<<<<<< HEAD
 import { computed, inject } from "vue"
+=======
+import { computed,inject } from "vue"
+>>>>>>> b34dddaa (fix: import missing inject)
 
 import EmptyState from "@/components/EmptyState.vue"
 import { formatCurrency } from "@/utils/formatters"
