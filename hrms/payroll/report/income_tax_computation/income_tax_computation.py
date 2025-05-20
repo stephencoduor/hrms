@@ -49,7 +49,7 @@ class IncomeTaxComputationReport:
 		self.data = list(self.employees.values())
 
 	def get_employee_details(self):
-		filters, or_filters = self.get_employee_filters()
+		filters = self.get_employee_filters()
 		fields = [
 			"name as employee",
 			"employee_name",
@@ -59,7 +59,7 @@ class IncomeTaxComputationReport:
 			"relieving_date",
 		]
 
-		employees = frappe.get_all("Employee", filters=filters, or_filters=or_filters, fields=fields)
+		employees = frappe.get_all("Employee", filters=filters, fields=fields)
 		ss_assignments = self.get_ss_assignments([d.employee for d in employees])
 
 		for d in employees:
@@ -72,9 +72,6 @@ class IncomeTaxComputationReport:
 
 	def get_employee_filters(self):
 		filters = {"company": self.filters.company}
-		or_filters = {
-			"relieving_date": ["between", [self.payroll_period_start_date, self.payroll_period_end_date]],
-		}
 		if self.filters.employee:
 			filters = {"name": self.filters.employee}
 		elif self.filters.department:
@@ -82,7 +79,7 @@ class IncomeTaxComputationReport:
 		elif self.filters.employee_status:
 			filters["status"] = self.filters.employee_status
 
-		return filters, or_filters
+		return filters
 
 	def get_ss_assignments(self, employees):
 		ss_assignments = frappe.get_all(
