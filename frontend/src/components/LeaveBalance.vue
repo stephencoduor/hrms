@@ -45,7 +45,7 @@
 
 <script setup>
 import SemicircleChart from "@/components/SemicircleChart.vue"
-
+import { inject } from "vue"
 import { leaveBalance } from "@/data/leaves"
 import { inject } from "vue"
 
