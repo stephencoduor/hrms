@@ -850,23 +850,25 @@ class TestShiftType(FrappeTestCase):
 def setup_shift_type(**args):
 	args = frappe._dict(args)
 	date = getdate()
-
-	shift_type = frappe.get_doc(
-		{
-			"doctype": "Shift Type",
-			"__newname": args.shift_type or "_Test Shift",
-			"start_time": args.start_time or "08:00:00",
-			"end_time": args.end_time or "12:00:00",
-			"enable_auto_attendance": 1,
-			"determine_check_in_and_check_out": "Alternating entries as IN and OUT during the same shift",
-			"working_hours_calculation_based_on": "First Check-in and Last Check-out",
-			"begin_check_in_before_shift_start_time": args.begin_check_in_before_shift_start_time or 60,
-			"allow_check_out_after_shift_end_time": args.allow_check_out_after_shift_end_time or 60,
-			"process_attendance_after": add_days(date, -2),
-			"last_sync_of_checkin": now_datetime() + timedelta(days=1),
-			"mark_auto_attendance_on_holidays": args.mark_auto_attendance_on_holidays or False,
-		}
-	)
+	if not frappe.db.exists("Shift Type", args.shift_type):
+		shift_type = frappe.get_doc(
+			{
+				"doctype": "Shift Type",
+				"__newname": args.shift_type or "_Test Shift",
+				"start_time": args.start_time or "08:00:00",
+				"end_time": args.end_time or "12:00:00",
+				"enable_auto_attendance": 1,
+				"determine_check_in_and_check_out": "Alternating entries as IN and OUT during the same shift",
+				"working_hours_calculation_based_on": "First Check-in and Last Check-out",
+				"begin_check_in_before_shift_start_time": args.begin_check_in_before_shift_start_time or 60,
+				"allow_check_out_after_shift_end_time": args.allow_check_out_after_shift_end_time or 60,
+				"process_attendance_after": add_days(date, -2),
+				"last_sync_of_checkin": now_datetime() + timedelta(days=1),
+				"mark_auto_attendance_on_holidays": args.mark_auto_attendance_on_holidays or False,
+			}
+		)
+	else:
+		shift_type = frappe.get_doc("Shift Type", args.shift_type)
 
 	holiday_list = "Employee Checkin Test Holiday List"
 	if not frappe.db.exists("Holiday List", "Employee Checkin Test Holiday List"):

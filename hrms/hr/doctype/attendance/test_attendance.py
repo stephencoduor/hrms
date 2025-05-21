@@ -226,7 +226,7 @@ class TestAttendance(FrappeTestCase):
 		from hrms.hr.doctype.employee_checkin.test_employee_checkin import make_checkin
 		from hrms.hr.doctype.shift_type.test_shift_type import setup_shift_type
 
-		shift = setup_shift_type(shift_type="Shift 1", start_time="08:00:00", end_time="17:00:00")
+		shift = setup_shift_type(shift_type="Test Duplicate", start_time="08:00:00", end_time="17:00:00")
 		employee = make_employee("test_duplicate@attendance.com", default_shift=shift.name)
 		mark_attendance(employee, getdate(), "Half Day", shift=shift.name, half_day_status="Absent")
 		make_checkin(employee, datetime.combine(getdate(), get_time("14:00:00")))
