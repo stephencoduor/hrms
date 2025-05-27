@@ -1,17 +1,25 @@
 frappe.ui.form.on("Employee Attendance Tool", {
 	refresh(frm) {
 		frm.trigger("reset_attendance_fields");
-		frm.disable_save();
-	},
-
-	onload(frm) {
-		frm.set_value("date", frappe.datetime.get_today());
+		frm.trigger("reset_tool_actions");
 		hide_field("select_employees_section");
 		hide_field("marked_attendance_section");
 	},
 
+	onload(frm) {
+		frm.set_value("date", frappe.datetime.get_today());
+	},
+
 	date: function (frm) {
-		// frm.trigger("load_employees");
+		hide_field("select_employees_section");
+		hide_field("marked_attendance_section");
+		frm.trigger("reset_tool_actions");
+	},
+
+	reset_tool_actions(frm) {
+		frm.disable_save();
+		get_employees_button = this.cur_frm.fields_dict.get_employees.$input;
+		get_employees_button.removeClass("btn-default").addClass("btn-primary");
 	},
 
 	get_employees: function (frm) {
@@ -46,7 +54,12 @@ frappe.ui.form.on("Employee Attendance Tool", {
 			.then((r) => {
 				unmarked_employees = r.message["unmarked"].length;
 				half_day_marked_employees = r.message["half_day_marked"].length;
-
+				if (r.message["marked"].length > 0) {
+					unhide_field("marked_attendance_section");
+					frm.events.show_marked_employees(frm, r.message["marked"]);
+				} else {
+					hide_field("marked_attendance_section");
+				}
 				if (unmarked_employees > 0 || half_day_marked_employees > 0) {
 					if (unmarked_employees) {
 						unhide_field("status");
@@ -79,13 +92,6 @@ frappe.ui.form.on("Employee Attendance Tool", {
 						: hide_field("horizontal_break");
 					unhide_field("select_employees_section");
 					frm.trigger("set_primary_action");
-
-					if (r.message["marked"].length > 0) {
-						unhide_field("marked_attendance_section");
-						frm.events.show_marked_employees(frm, r.message["marked"]);
-					} else {
-						hide_field("marked_attendance_section");
-					}
 				} else {
 					frappe.msgprint({
 						message: __(
@@ -185,7 +191,12 @@ frappe.ui.form.on("Employee Attendance Tool", {
 		const summary_wrapper = $(`<div class="summary_wrapper">`).appendTo($wrapper);
 
 		const data = marked_employees.map((entry) => {
-			return [`${entry.employee} : ${entry.employee_name}`, entry.status];
+			return [
+				`${entry.employee} : ${entry.employee_name}`,
+				entry.status,
+				entry.shift,
+				entry.leave_type,
+			];
 		});
 
 		frm.events.render_datatable(frm, data, summary_wrapper);
@@ -214,6 +225,8 @@ frappe.ui.form.on("Employee Attendance Tool", {
 		}
 	},
 	set_primary_action(frm) {
+		get_employees_button = this.cur_frm.fields_dict.get_employees.$input;
+		get_employees_button.removeClass("btn-primary").addClass("btn-default");
 		frm.page.set_primary_action(__("Mark Attendance"), () => {
 			const employees_to_mark_full_day =
 				frm.get_field("unmarked_employees_multicheck")?.get_checked_options() || [];
