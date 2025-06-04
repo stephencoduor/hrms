@@ -127,6 +127,15 @@ watch(
 	}
 )
 
+watch(
+	() => leaveApplication.value.leave_approver,
+  	(newApprover) => {
+			const approverField = formFields.data.find(f => f.fieldname === "leave_approver")
+			const selected = approverField?.documentList?.find(opt => opt.value === newApprover)
+			leaveApplication.value.leave_approver_name = selected?.label?.split(" : ")[1] || ""
+  }
+)
+
 // helper functions
 function getFilteredFields(fields) {
 	// reduce noise from the form view by excluding unnecessary fields
