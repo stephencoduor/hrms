@@ -57,11 +57,11 @@ frappe.query_reports["Salary Register"] = {
 			fieldtype: "Link",
 			options: "Department",
 			width: "100px",
-			get_query: function() {
+			get_query: function () {
 				return {
 					filters: {
-						company: frappe.query_report.get_filter_value("company")
-					}
+						company: frappe.query_report.get_filter_value("company"),
+					},
 				};
 			},
 		},
