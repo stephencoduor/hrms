@@ -132,6 +132,7 @@ class AdditionalSalary(Document):
 					& (AdditionalSalary.employee == self.employee)
 					& (AdditionalSalary.overwrite_salary_structure_amount == 1)
 					& (AdditionalSalary.docstatus == 1)
+					& (AdditionalSalary.disabled == 0)
 					& (
 						(AdditionalSalary.payroll_date == self.payroll_date)
 						| (
@@ -139,7 +140,6 @@ class AdditionalSalary(Document):
 							& (AdditionalSalary.to_date >= self.payroll_date)
 						)
 					)
-					& (AdditionalSalary.disabled == 0)
 				)
 			)
 			.limit(1)
