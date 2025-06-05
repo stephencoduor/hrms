@@ -139,6 +139,7 @@ class AdditionalSalary(Document):
 							& (AdditionalSalary.to_date >= self.payroll_date)
 						)
 					)
+					& (AdditionalSalary.disabled == 0)
 				)
 			)
 			.limit(1)
