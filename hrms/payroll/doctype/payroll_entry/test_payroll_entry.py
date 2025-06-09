@@ -914,6 +914,8 @@ def setup_lending():
 		set_loan_settings_in_company,
 	)
 
+	frappe.get_single("Installed Applications").update_versions()
+
 	company = "_Test Company"
 	branch = "Test Employee Branch"
 
