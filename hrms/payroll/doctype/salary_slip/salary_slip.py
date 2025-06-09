@@ -50,7 +50,7 @@ from hrms.payroll.doctype.payroll_period.payroll_period import (
 from hrms.payroll.doctype.salary_slip.salary_slip_loan_utils import (
 	cancel_loan_repayment_entry,
 	make_loan_repayment_entry,
-	process_loan_interest_accruals,
+	process_loan_interest_accrual_and_demand,
 	set_loan_repayment,
 )
 from hrms.payroll.utils import sanitize_expression
@@ -347,7 +347,7 @@ class SalarySlip(TransactionBase):
 				self.set_time_sheet()
 				self.pull_sal_struct()
 
-			process_loan_interest_accruals(self)
+			process_loan_interest_accrual_and_demand(self)
 
 	def set_time_sheet(self):
 		if self.salary_slip_based_on_timesheet:
