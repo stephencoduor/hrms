@@ -33,14 +33,14 @@ def set_loan_repayment(doc: "SalarySlip"):
 		loan_details = _get_loan_details(doc)
 
 		for loan in loan_details:
-			amounts = calculate_amounts(loan.name, doc.end_date, "Normal Repayment")
+			amounts = calculate_amounts(loan.name, doc.end_date)
 
-			if amounts["interest_amount"] or amounts["payable_principal_amount"]:
+			if amounts["payable_amount"]:
 				doc.append(
 					"loans",
 					{
 						"loan": loan.name,
-						"total_payment": amounts["interest_amount"] + amounts["payable_principal_amount"],
+						"total_payment": amounts["payable_amount"],
 						"interest_amount": amounts["interest_amount"],
 						"principal_amount": amounts["payable_principal_amount"],
 						"loan_account": loan.loan_account,
@@ -51,8 +51,9 @@ def set_loan_repayment(doc: "SalarySlip"):
 		doc.set("loans", [])
 
 	for payment in doc.get("loans", []):
-		amounts = calculate_amounts(payment.loan, doc.end_date, "Normal Repayment")
-		total_amount = amounts["interest_amount"] + amounts["payable_principal_amount"]
+		amounts = calculate_amounts(payment.loan, doc.end_date)
+		total_amount = amounts["payable_amount"]
+
 		if payment.total_payment > total_amount:
 			frappe.throw(
 				_(
@@ -91,39 +92,28 @@ def process_loan_interest_accrual_and_demand(doc: "SalarySlip"):
 	if not loans:
 		return
 
-	is_version_15 = is_lending_version_15()
-	if is_version_15:
+	loan_demand_exists = frappe.db.exists("DocType", "Loan Demand")
+	if loan_demand_exists:
+		from lending.loan_management.doctype.process_loan_demand.process_loan_demand import (
+			process_daily_loan_demands,
+		)
 		from lending.loan_management.doctype.process_loan_interest_accrual.process_loan_interest_accrual import (
-			process_loan_interest_accrual_for_term_loans,
+			process_loan_interest_accrual_for_loans,
 		)
 	else:
 		from lending.loan_management.doctype.process_loan_interest_accrual.process_loan_interest_accrual import (
-			process_loan_interest_accrual_for_loans,
+			process_loan_interest_accrual_for_term_loans,
 		)
 
 	for loan in loans:
 		if loan.get("is_term_loan"):
-			if is_version_15:
+			if loan_demand_exists:
+				process_loan_interest_accrual_for_loans(doc.end_date, loan.loan_product, loan.name)
+				process_daily_loan_demands(doc.end_date, loan.loan_product, loan.name)
+			else:
 				process_loan_interest_accrual_for_term_loans(
 					posting_date=doc.end_date, loan_product=loan.loan_product, loan=loan.name
 				)
-			else:
-				process_loan_interest_accrual_for_loans(doc.end_date, loan.loan_product, loan.name)
-				process_loan_demand(doc.end_date, loan.loan_product, loan.name)
-
-
-def process_loan_demand(posting_date, loan_product, loan):
-	loan_disbursement = frappe.db.get_value(
-		"Loan Disbursement",
-		{"against_loan": loan, "docstatus": 1},
-		"name",
-	)
-	process_loan_demand = frappe.new_doc("Process Loan Demand")
-	process_loan_demand.posting_date = posting_date
-	process_loan_demand.loan_product = loan_product
-	process_loan_demand.loan = loan
-	process_loan_demand.loan_disbursement = loan_disbursement
-	process_loan_demand.submit()
 
 
 @if_lending_app_installed
@@ -182,12 +172,3 @@ def get_payroll_payable_account(company, payroll_entry):
 		payroll_payable_account = frappe.db.get_value("Company", company, "default_payroll_payable_account")
 
 	return payroll_payable_account
-
-
-def is_lending_version_15():
-	lending_version = frappe.db.get_value(
-		"Installed Application",
-		{"parent": "Installed Applications", "app_name": "lending"},
-		"git_branch",
-	)
-	return lending_version == "version-15"
