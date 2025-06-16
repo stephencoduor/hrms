@@ -402,7 +402,7 @@ def get_actual_shift_end(shift, current_datetime):
 	actual_shift_start = shift_details["actual_start"]
 	actual_shift_end = shift_details["actual_end"]
 
-	if actual_shift_start.date() < actual_shift_end.date():
+	if (actual_shift_start.date() < actual_shift_end.date()) or (current_datetime < actual_shift_start):
 		# shift start and end are on different days
 		actual_shift_end = add_days(actual_shift_end, -1)
 	return actual_shift_end
