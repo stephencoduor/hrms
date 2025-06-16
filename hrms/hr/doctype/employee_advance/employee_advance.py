@@ -41,7 +41,7 @@ class EmployeeAdvance(Document):
 			else:
 				frappe.throw(
 					_(
-						'Advance Account is mandatory. Please set the <a href="/app/company/{0}#default_employee_advance_account" target="_blank">Default Employee Advance Account</a> in the Company record {0}.'
+						'Advance Account is mandatory. Please set the <a href="/app/company/{0}#default_employee_advance_account" target="_blank">Default Employee Advance Account</a> in the Company record {0} and submit this document.'
 					).format(self.company),
 					title=_("Missing Advance Account"),
 				)
