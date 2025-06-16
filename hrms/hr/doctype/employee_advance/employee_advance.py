@@ -25,7 +25,13 @@ class EmployeeAdvance(Document):
 			"Accounts Settings", "make_payment_via_journal_entry"
 		)
 
-	def before_save(self):
+	def validate(self):
+		validate_active_employee(self.employee)
+		self.validate_exchange_rate()
+		self.set_status()
+		self.set_pending_amount()
+
+	def before_submit(self):
 		if not self.get("advance_account"):
 			default_advance_account = frappe.db.get_value(
 				"Company", self.company, "default_employee_advance_account"
@@ -39,12 +45,6 @@ class EmployeeAdvance(Document):
 					).format(self.company),
 					title=_("Missing Advance Account"),
 				)
-
-	def validate(self):
-		validate_active_employee(self.employee)
-		self.validate_exchange_rate()
-		self.set_status()
-		self.set_pending_amount()
 
 	def on_cancel(self):
 		self.ignore_linked_doctypes = ("GL Entry", "Payment Ledger Entry")
