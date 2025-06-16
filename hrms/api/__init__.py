@@ -127,10 +127,10 @@ def get_attendance_calendar_events(employee: str, from_date: str, to_date: str) 
 	date = getdate(from_date)
 	while date_diff(to_date, date) >= 0:
 		date_str = date.strftime("%Y-%m-%d")
-		if date in holidays:
-			events[date_str] = "Holiday"
-		elif date in attendance:
+		if date in attendance:
 			events[date_str] = attendance[date]
+		elif date in holidays:
+			events[date_str] = "Holiday"
 		date = add_days(date, 1)
 
 	return events
