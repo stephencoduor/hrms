@@ -653,7 +653,7 @@ class SalarySlip(TransactionBase):
 
 		for d in working_days_list:
 			if self.relieving_date and d > self.relieving_date:
-				continue
+				break
 
 			leave = leaves.get(d)
 
@@ -674,7 +674,7 @@ class SalarySlip(TransactionBase):
 
 			if cint(leave.is_ppl):
 				equivalent_lwp_count *= (
-					fraction_of_daily_salary_per_leave if fraction_of_daily_salary_per_leave else 1
+					(1 - fraction_of_daily_salary_per_leave) if fraction_of_daily_salary_per_leave else 1
 				)
 
 			lwp += equivalent_lwp_count
