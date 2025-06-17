@@ -1770,6 +1770,9 @@ class SalarySlip(TransactionBase):
 
 		future_recurring_period = ((to_date.year - from_date.year) * 12) + (to_date.month - from_date.month)
 
+		if future_recurring_period > 0 and to_date.month == from_date.month:
+			future_recurring_period -= 1
+
 		return future_recurring_period
 
 	def get_future_recurring_additional_amount(self, additional_salary, monthly_additional_amount):
