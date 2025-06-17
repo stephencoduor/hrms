@@ -84,11 +84,13 @@ const leaveTypes = createResource({
 watch(
 	() => leaveApplication.value.employee,
 	(employee_id) => {
-		if (props.id && employee_id !== employee.data.name) {
+		if (props.id && employee_id !== currEmployee.value) {
 			// if employee is not the current user, set form as read only
 			setFormReadOnly()
 		}
 		currEmployee.value = employee_id
+		leaveTypes.fetch({ employee: currEmployee.value, date: today })
+		leaveApprovalDetails.fetch({ employee: currEmployee.value })		
 	}
 )
 watch(
