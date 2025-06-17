@@ -178,8 +178,8 @@ watch(
 watch(
 	() => expenseClaim.value.company,
 	(company) => {
-		expenseClaim.value.company = company
-		companyDetails.fetch({ company: expenseClaim.value.company })
+		employeeCompany.value = company
+		companyDetails.fetch({ company: employeeCompany.value })
 	}
 )
 watch(
