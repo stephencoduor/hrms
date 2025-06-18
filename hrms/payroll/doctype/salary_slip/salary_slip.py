@@ -653,7 +653,7 @@ class SalarySlip(TransactionBase):
 
 		for d in working_days_list:
 			if self.relieving_date and d > self.relieving_date:
-				continue
+				break
 
 			leave = leaves.get(d)
 
@@ -674,7 +674,7 @@ class SalarySlip(TransactionBase):
 
 			if cint(leave.is_ppl):
 				equivalent_lwp_count *= (
-					fraction_of_daily_salary_per_leave if fraction_of_daily_salary_per_leave else 1
+					(1 - fraction_of_daily_salary_per_leave) if fraction_of_daily_salary_per_leave else 1
 				)
 
 			lwp += equivalent_lwp_count
@@ -1769,6 +1769,9 @@ class SalarySlip(TransactionBase):
 			to_date = getdate(self.payroll_period.end_date)
 
 		future_recurring_period = ((to_date.year - from_date.year) * 12) + (to_date.month - from_date.month)
+
+		if future_recurring_period > 0 and to_date.month == from_date.month:
+			future_recurring_period -= 1
 
 		return future_recurring_period
 
