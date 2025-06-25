@@ -139,7 +139,7 @@ def get_attendance_calendar_events(employee: str, from_date: str, to_date: str) 
 def get_attendance_for_calendar(employee: str, from_date: str, to_date: str) -> list[dict[str, str]]:
 	attendance = frappe.get_all(
 		"Attendance",
-		{"employee": employee, "attendance_date": ["between", [from_date, to_date]]},
+		{"employee": employee, "attendance_date": ["between", [from_date, to_date]], "docstatus": 1},
 		["attendance_date", "status"],
 	)
 	return {d["attendance_date"]: d["status"] for d in attendance}
