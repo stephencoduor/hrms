@@ -403,7 +403,8 @@ def get_rows(employee_details: dict, filters: Filters, holiday_map: dict, attend
 				employee, filters, employee_attendance, holidays
 			)
 			# set employee details in the first row
-			attendance_for_employee[0].update({"employee": employee, "employee_name": details.employee_name})
+			for record in attendance_for_employee:
+				record.update({"employee": employee, "employee_name": details.employee_name})
 
 			records.extend(attendance_for_employee)
 
