@@ -202,7 +202,6 @@ def get_attendance_requests(
 	limit: int | None = None,
 ) -> list[dict]:
 	filters = get_filters("Attendance Request", employee, None, for_approval)
-	print(filters)
 	fields = [
 		"name",
 		"reason",
