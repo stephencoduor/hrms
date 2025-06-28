@@ -194,7 +194,7 @@ class AttendanceRequest(Document):
 	def publish_update(self):
 		employee_user = frappe.db.get_value("Employee", self.employee, "user_id", cache=True)
 		hrms.refetch_resource("hrms:my_attendance_requests", employee_user)
-		hrms.refetch_resource("hrms:team_attendance_requests", employee_user)
+		hrms.refetch_resource("hrms:team_attendance_requests")
 
 	@frappe.whitelist()
 	def get_attendance_warnings(self) -> list:
