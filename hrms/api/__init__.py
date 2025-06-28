@@ -247,7 +247,7 @@ def get_filters(
 		if workflow := get_workflow(doctype):
 			allowed_states = get_allowed_states_for_workflow(workflow, approver_id)
 			filters[workflow.workflow_state_field] = ("in", allowed_states)
-		else:
+		elif doctype != "Attendance Request":
 			approver_field_map = {
 				"Shift Request": "approver",
 				"Leave Application": "leave_approver",
