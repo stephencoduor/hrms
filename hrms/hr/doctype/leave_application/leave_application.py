@@ -131,7 +131,7 @@ class LeaveApplication(Document, PWANotificationsMixin):
 	def publish_update(self):
 		employee_user = frappe.db.get_value("Employee", self.employee, "user_id", cache=True)
 		hrms.refetch_resource("hrms:my_leaves", employee_user)
-		hrms.refetch_resource("hrms:team_leaves", employee_user)
+		hrms.refetch_resource("hrms:team_leaves")
 
 	def validate_applicable_after(self):
 		if self.leave_type:
