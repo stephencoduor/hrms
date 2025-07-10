@@ -42,7 +42,7 @@
    "fieldname": "create_shifts_after",
    "fieldtype": "Date",
    "label": "Create Shifts After",
-   "mandatory_depends_on": "eval:doc.status === 'Active'"
+   "mandatory_depends_on": "eval:doc.enabled"
   },
   {
    "fieldname": "shift_details_section",
@@ -107,7 +107,7 @@
    "link_fieldname": "shift_schedule_assignment"
   }
  ],
- "modified": "2025-07-10 18:34:44.009398",
+ "modified": "2025-07-10 18:48:42.170391",
  "modified_by": "Administrator",
  "module": "HR",
  "name": "Shift Schedule Assignment",
