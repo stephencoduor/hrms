@@ -495,22 +495,19 @@ class SalarySlip(TransactionBase):
 
 			consider_unmarked_attendance_as = payroll_settings.consider_unmarked_attendance_as or "Present"
 
-			if (
-				payroll_settings.payroll_based_on == "Attendance"
-				and consider_unmarked_attendance_as == "Absent"
-			):
-				unmarked_days = self.get_unmarked_days(
-					payroll_settings.include_holidays_in_total_working_days, holidays
-				)
+			if payroll_settings.payroll_based_on == "Attendance":
+				if consider_unmarked_attendance_as == "Absent":
+					unmarked_days = self.get_unmarked_days(
+						payroll_settings.include_holidays_in_total_working_days, holidays
+					)
+					self.absent_days += unmarked_days  # will be treated as absent
+					self.payment_days -= unmarked_days
 				half_absent_days = self.get_half_absent_days(
-					payroll_settings.include_holidays_in_total_working_days,
-					consider_marked_attendance_on_holidays,
-					holidays,
-				)
-				self.absent_days += (
-					unmarked_days + half_absent_days * daily_wages_fraction_for_half_day
-				)  # will be treated as absent
-				self.payment_days -= unmarked_days + half_absent_days * daily_wages_fraction_for_half_day
+						payroll_settings.include_holidays_in_total_working_days,
+						consider_marked_attendance_on_holidays,
+						holidays,
+					)
+				self.payment_days -= (half_absent_days * daily_wages_fraction_for_half_day)
 		else:
 			self.payment_days = 0
 
