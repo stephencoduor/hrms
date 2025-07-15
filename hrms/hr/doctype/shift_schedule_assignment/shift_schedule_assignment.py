@@ -126,5 +126,10 @@ def process_auto_shift_creation():
 		pluck="name",
 	)
 	for d in shift_schedule_assignments:
-		doc = frappe.get_doc("Shift Schedule Assignment", d)
-		doc.create_shifts(add_days(doc.create_shifts_after, 1))
+		try:
+			doc = frappe.get_doc("Shift Schedule Assignment", d)
+			doc.create_shifts(add_days(doc.create_shifts_after, 1))
+		except Exception as e:
+			frappe.log_error(e)
+
+			continue
