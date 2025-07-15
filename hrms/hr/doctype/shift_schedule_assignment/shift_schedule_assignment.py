@@ -116,6 +116,7 @@ class ShiftScheduleAssignment(Document):
 			self.name,
 		)
 		self.create_shifts_after = end_date
+		self.flags.ignore_validate = True
 		self.save()
 
 
