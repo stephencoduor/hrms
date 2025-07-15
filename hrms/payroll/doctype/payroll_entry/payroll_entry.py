@@ -340,7 +340,14 @@ class PayrollEntry(Document):
 					ss.salary_structure,
 					ss.employee,
 				)
-				.where((ssd.parentfield == component_type) & (ss.name.isin([d.name for d in salary_slips])))
+				.where(
+					(ssd.parentfield == component_type)
+					& (ss.name.isin([d.name for d in salary_slips]))
+					& (
+						(ssd.do_not_include_in_total == 0)
+						| ((ssd.do_not_include_in_total == 1) & (ssd.do_not_include_in_accounts == 0))
+					)
+				)
 			).run(as_dict=True)
 
 			return salary_components
@@ -386,10 +393,10 @@ class PayrollEntry(Document):
 	def should_add_component_to_accrual_jv(self, component_type: str, item: dict) -> bool:
 		add_component_to_accrual_jv = True
 		if component_type == "earnings":
-			is_flexible_benefit, only_tax_impact, do_not_include_in_total = frappe.get_cached_value(
-				"Salary Component", item["salary_component"], ["is_flexible_benefit", "only_tax_impact", "do_not_include_in_total"]
+			is_flexible_benefit, only_tax_impact = frappe.get_cached_value(
+				"Salary Component", item["salary_component"], ["is_flexible_benefit", "only_tax_impact"]
 			)
-			if (cint(is_flexible_benefit) and cint(only_tax_impact)) or cint(do_not_include_in_total):
+			if cint(is_flexible_benefit) and cint(only_tax_impact):
 				add_component_to_accrual_jv = False
 
 		return add_component_to_accrual_jv
