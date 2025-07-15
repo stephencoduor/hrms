@@ -29,9 +29,6 @@ hrms.patches.v15_0.update_payment_status_for_leave_encashment
 hrms.patches.v15_0.create_accounting_dimensions_in_leave_encashment
 hrms.patches.v15_0.create_marginal_relief_field_for_india_localisation
 hrms.patches.v15_0.set_half_day_status_to_present_in_exisiting_half_day_attendance
-<<<<<<< HEAD
-=======
 hrms.patches.v14_0.create_marginal_relief_field_for_india_localisation
 hrms.patches.v15_0.create_marginal_relief_field_for_india_localisation
 hrms.patches.v15_0.fix_timesheet_status
->>>>>>> 5fee12a5 (fix(Timesheet): add patch to update wrong status)
