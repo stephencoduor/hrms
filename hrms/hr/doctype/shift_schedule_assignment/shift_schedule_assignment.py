@@ -115,9 +115,7 @@ class ShiftScheduleAssignment(Document):
 			self.shift_location,
 			self.name,
 		)
-		self.create_shifts_after = end_date
-		self.flags.ignore_validate = True
-		self.save()
+		self.db_set("create_shifts_after", end_date)
 
 
 def process_auto_shift_creation():
