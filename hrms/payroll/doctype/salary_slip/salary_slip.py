@@ -507,7 +507,8 @@ class SalarySlip(TransactionBase):
 					consider_marked_attendance_on_holidays,
 					holidays,
 				)
-				self.payment_days -= (half_absent_days * daily_wages_fraction_for_half_day)
+				self.absent_days += half_absent_days * daily_wages_fraction_for_half_day
+				self.payment_days -= half_absent_days * daily_wages_fraction_for_half_day
 		else:
 			self.payment_days = 0
 
@@ -542,11 +543,7 @@ class SalarySlip(TransactionBase):
 				& (Attendance.half_day_status == "Absent")
 			)
 		)
-		if (
-			(not include_holidays_in_total_working_days)
-			and (not consider_marked_attendance_on_holidays)
-			and holidays
-		):
+		if (not consider_marked_attendance_on_holidays) and holidays:
 			query = query.where(Attendance.attendance_date.notin(holidays))
 		return query.run()[0][0]
 
@@ -746,7 +743,7 @@ class SalarySlip(TransactionBase):
 				]
 
 			if d.status == "Half Day" and d.leave_type and d.leave_type in leave_type_map.keys():
-				equivalent_lwp = 1 - daily_wages_fraction_for_half_day
+				equivalent_lwp = 1 - daily_wages_fraction_for_half_day if d.half_day_status == "Absent" else 1
 
 				if leave_type_map[d.leave_type]["is_ppl"]:
 					equivalent_lwp *= (
