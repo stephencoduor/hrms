@@ -743,7 +743,7 @@ class SalarySlip(TransactionBase):
 				]
 
 			if d.status == "Half Day" and d.leave_type and d.leave_type in leave_type_map.keys():
-				equivalent_lwp = 1 - daily_wages_fraction_for_half_day if d.half_day_status == "Absent" else 1
+				equivalent_lwp = 1 - daily_wages_fraction_for_half_day
 
 				if leave_type_map[d.leave_type]["is_ppl"]:
 					equivalent_lwp *= (
