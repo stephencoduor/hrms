@@ -1,36 +1,23 @@
 # Copyright (c) 2024, Frappe Technologies Pvt. Ltd. and Contributors
 # See license.txt
 
-<<<<<<< HEAD
-# import frappe
-from frappe.tests.utils import FrappeTestCase
-=======
 import frappe
-from frappe.tests import IntegrationTestCase
+from frappe.tests.utils import FrappeTestCase
 from frappe.utils import add_days, getdate
 
 from erpnext.setup.doctype.employee.test_employee import make_employee
 
 from hrms.hr.doctype.shift_schedule.shift_schedule import get_or_insert_shift_schedule
 from hrms.hr.doctype.shift_type.test_shift_type import setup_shift_type
->>>>>>> c5061aa9 (test: validate existing shift assignments before saving shift schedule assignment)
 
 # On FrappeTestCase, the doctype test records and all
 # link-field test record depdendencies are recursively loaded
 # Use these module variables to add/remove to/from that list
 
 
-<<<<<<< HEAD
 class TestShiftScheduleAssignment(FrappeTestCase):
-	"""
-	Integration tests for ShiftScheduleAssignment.
-	Use this class for testing interactions between multiple components.
-	"""
-=======
-class TestShiftScheduleAssignment(IntegrationTestCase):
 	def setUp(self):
 		frappe.db.delete("Shift Type", "Shift Schedule" "Shift Schedule Assignment")
->>>>>>> c5061aa9 (test: validate existing shift assignments before saving shift schedule assignment)
 
 		self.employee = make_employee("test@scheduleassignment.com", company="_Test Company")
 		self.shift_type = setup_shift_type(
