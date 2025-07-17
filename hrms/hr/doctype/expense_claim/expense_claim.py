@@ -145,7 +145,7 @@ class ExpenseClaim(AccountsController, PWANotificationsMixin):
 		self.update_claimed_amount_in_employee_advance()
 
 	def on_update_after_submit(self):
-		if self.check_if_fields_updated([], {"taxes": ("account_head")}):
+		if self.check_if_fields_updated([], {"taxes": ("account_head"), "expenses": ()}):
 			validate_docs_for_voucher_types(["Expense Claim"])
 			self.repost_accounting_entries()
 
