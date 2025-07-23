@@ -297,9 +297,10 @@ class TestSalarySlip(FrappeTestCase):
 		# from half lwp
 		self.assertEqual(ss.leave_without_pay, 0.5)
 
-		self.assertEqual(ss.absent_days, 1)
+		self.assertEqual(ss.absent_days, 2.5)
 
-		self.assertEqual(ss.payment_days, days_in_month - no_of_holidays - 1.5)
+		# total payment days = total working days - lwp - absent days
+		self.assertEqual(ss.payment_days, days_in_month - no_of_holidays - 0.5 - 2.5)
 
 		# Gross pay calculation based on attendances
 		gross_pay = 78000 - (
@@ -779,7 +780,6 @@ class TestSalarySlip(FrappeTestCase):
 			emp_id,
 			first_sunday,
 			"Half Day",
-			leave_type="Leave Without Pay",
 			half_day_status="Absent",
 			ignore_validate=True,
 		)
