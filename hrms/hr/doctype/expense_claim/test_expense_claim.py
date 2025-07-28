@@ -665,6 +665,50 @@ class TestExpenseClaim(FrappeTestCase):
 
 		self.assertEqual(1, expense_claim.docstatus)
 
+	def test_self_expense_approval_not_allowed(self):
+		frappe.db.set_single_value("HR Settings", "prevent_self_expense_approval", 1)
+
+		expense_approver = "test_expense_approver@example.com"
+		make_employee(expense_approver, company="_Test Company")
+
+		employee = frappe.get_doc(
+			"Employee",
+			make_employee(
+				"test_self_expense_approval@example.com",
+				company="_Test Company",
+				expense_approver=expense_approver,
+			),
+		)
+
+		from frappe.utils.user import add_role
+
+		add_role(employee.user_id, "Expense Approver")
+		add_role(expense_approver, "Expense Approver")
+
+		payable_account = get_payable_account("_Test Company")
+		expense_claim = make_expense_claim(
+			payable_account,
+			300,
+			200,
+			"_Test Company",
+			"Travel Expenses - _TC",
+			do_not_submit=True,
+			employee=employee.name,
+		)
+
+		expense_claim.expense_approver = expense_approver
+		expense_claim.save()
+
+		frappe.set_user(employee.user_id)
+
+		self.assertRaises(frappe.ValidationError, expense_claim.submit)
+		expense_claim.reload()
+
+		frappe.set_user(expense_approver)
+		expense_claim.submit()
+
+		self.assertEqual(1, expense_claim.docstatus)
+
 
 def get_payable_account(company):
 	return frappe.get_cached_value("Company", company, "default_payable_account")
