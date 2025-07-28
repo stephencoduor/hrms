@@ -386,12 +386,8 @@
    "role": "Employee"
   }
  ],
-<<<<<<< HEAD
- "sort_field": "modified",
-=======
  "row_format": "Dynamic",
  "sort_field": "creation",
->>>>>>> 0839685e (feat(minor): new HR setting to prevent self approval for expense claims)
  "sort_order": "ASC",
  "states": [],
  "track_changes": 1
