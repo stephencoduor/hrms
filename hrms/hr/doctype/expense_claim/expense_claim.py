@@ -126,6 +126,8 @@ class ExpenseClaim(AccountsController, PWANotificationsMixin):
 		if not self.payable_account and not self.is_paid:
 			frappe.throw(_("Payable Account is mandatory to submit an Expense Claim"))
 
+		self.validate_for_self_approval()
+
 	def publish_update(self):
 		employee_user = frappe.db.get_value("Employee", self.employee, "user_id", cache=True)
 		hrms.refetch_resource("hrms:my_claims", employee_user)
