@@ -6,7 +6,7 @@
 		>
 			<div class="flex flex-col gap-1.5">
 				<span class="text-gray-600 text-base font-medium leading-5">
-					{{ __("Total Expense Amount") }}
+					{{ __("Total Claimed Amount") }}
 				</span>
 				<span class="text-gray-800 text-lg font-bold leading-6">
 					{{ formatCurrency(total_claimed_amount, company_currency) }}

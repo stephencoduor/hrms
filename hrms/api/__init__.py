@@ -544,9 +544,7 @@ def get_expense_claim_summary(employee: str) -> dict:
 	sum_approved_claims = Sum(approved_claims_case).as_("total_approved_amount")
 
 	rejected_claims_case = (
-		frappe.qb.terms.Case()
-		.when(Claim.approval_status == "Rejected", Claim.total_sanctioned_amount)
-		.else_(0)
+		frappe.qb.terms.Case().when(Claim.approval_status == "Rejected", Claim.total_claimed_amount).else_(0)
 	)
 	sum_rejected_claims = Sum(rejected_claims_case).as_("total_rejected_amount")
 
