@@ -160,6 +160,6 @@ var set_value_for_condition_and_formula = function (frm) {
 		statistical_component: 0,
 		do_not_include_in_total: 0,
 		do_not_include_in_accounts: 0,
-		depends_on_payment_days: 0
+		depends_on_payment_days: 0,
 	});
 };
