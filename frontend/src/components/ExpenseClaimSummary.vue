@@ -57,7 +57,8 @@
 					<span class="text-gray-800 text-base font-semibold leading-6">
 						{{
 							formatCurrency(
-								summary.data?.total_rejected_amount,
+								summary.data?.total_rejected_amount + 
+								(summary.data?.total_claimed_in_approved - summary.data?.total_approved_amount),
 								company_currency
 							)
 						}}
@@ -79,7 +80,7 @@ import { formatCurrency } from "@/utils/formatters"
 const total_claimed_amount = computed(() => {
 	return (
 		summary.data?.total_pending_amount +
-		summary.data?.total_approved_amount +
+		summary.data?.total_claimed_in_approved +
 		summary.data?.total_rejected_amount
 	)
 })
