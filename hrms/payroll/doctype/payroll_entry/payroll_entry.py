@@ -968,6 +968,13 @@ class PayrollEntry(Document):
 				& (SalarySlip.start_date >= self.start_date)
 				& (SalarySlip.end_date <= self.end_date)
 				& (SalarySlip.payroll_entry == self.name)
+				& (
+					(SalaryDetail.do_not_include_in_total == 0)
+					| (
+						(SalaryDetail.do_not_include_in_total == 1)
+						& (SalaryDetail.do_not_include_in_accounts == 0)
+					)
+				)
 			)
 		)
 
