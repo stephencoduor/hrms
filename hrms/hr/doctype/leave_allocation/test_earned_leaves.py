@@ -612,16 +612,14 @@ def create_earned_leave_type(
 	frappe.delete_doc_if_exists("Leave Type", "Test Earned Leave Type 2", force=1)
 
 	return frappe.get_doc(
-		dict(
-			leave_type_name=leave_type,
-			doctype="Leave Type",
-			is_earned_leave=1,
-			earned_leave_frequency=earned_leave_frequency,
-			rounding=rounding,
-			is_carry_forward=1,
-			allocate_on_day=allocate_on_day,
-			max_leaves_allowed=0,
-		)
+		leave_type_name=leave_type,
+		doctype="Leave Type",
+		is_earned_leave=1,
+		earned_leave_frequency=earned_leave_frequency,
+		rounding=rounding,
+		is_carry_forward=1,
+		allocate_on_day=allocate_on_day,
+		max_leaves_allowed=0,
 	).insert()
 
 
