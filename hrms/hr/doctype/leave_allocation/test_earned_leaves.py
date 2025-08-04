@@ -533,21 +533,21 @@ class TestLeaveAllocation(FrappeTestCase):
 			"Quarterly", earned_leave_frequency="Quarterly", allocate_on_day="Last Day", rounding=0.5
 		)
 		leave_policy = frappe.get_doc(
-			dict(
-				doctype="Leave Policy",
-				title=leave_type.name,
-				leave_policy_details=[{"leave_type": leave_type.name, "annual_allocation": 12}],
-			)
+			{
+				"doctype": "Leave Policy",
+				"title": leave_type.name,
+				"leave_policy_details": [{"leave_type": leave_type.name, "annual_allocation": 12}],
+			}
 		).insert()
 		leave_period = create_leave_period("Year", start_date=get_year_start(getdate()))
 		lpa = frappe.get_doc(
-			dict(
-				doctype="Leave Policy Assignment",
-				leave_policy=leave_policy.name,
-				assignment_based_on="Leave Period",
-				leave_period=leave_period.name,
-				employee=employee.name,
-			)
+			{
+				"doctype": "Leave Policy Assignment",
+				"leave_policy": leave_policy.name,
+				"assignment_based_on": "Leave Period",
+				"leave_period": leave_period.name,
+				"employee": employee.name,
+			}
 		).insert()
 		lpa.submit()
 
@@ -570,21 +570,21 @@ class TestLeaveAllocation(FrappeTestCase):
 			"Quarterly", earned_leave_frequency="Quarterly", allocate_on_day="Last Day", rounding=0.5
 		)
 		leave_policy = frappe.get_doc(
-			dict(
-				doctype="Leave Policy",
-				title=leave_type.name,
-				leave_policy_details=[{"leave_type": leave_type.name, "annual_allocation": 12}],
-			)
+			{
+				"doctype": "Leave Policy",
+				"title": leave_type.name,
+				"leave_policy_details": [{"leave_type": leave_type.name, "annual_allocation": 12}],
+			}
 		).insert()
 		leave_period = create_leave_period("Year", start_date=get_year_start(getdate()))
 		lpa = frappe.get_doc(
-			dict(
-				doctype="Leave Policy Assignment",
-				leave_policy=leave_policy.name,
-				assignment_based_on="Leave Period",
-				leave_period=leave_period.name,
-				employee=employee.name,
-			)
+			{
+				"doctype": "Leave Policy Assignment",
+				"leave_policy": leave_policy.name,
+				"assignment_based_on": "Leave Period",
+				"leave_period": leave_period.name,
+				"employee": employee.name,
+			}
 		).insert()
 		lpa.submit()
 
