@@ -147,12 +147,12 @@ class LeavePolicyAssignment(Document):
 		# if earned leave is being allcated after the effective period, then let them be calculated pro-rata
 
 		elif leave_details.is_earned_leave and current_date < getdate(self.effective_to):
-			if leave_details.earned_leave_frequency == "Monthly":
-				new_leaves_allocated = self.get_leaves_for_passed_months(
-					annual_allocation, leave_details, date_of_joining
-				)
 			if leave_details.earned_leave_frequency == "Quarterly":
 				new_leaves_allocated = self.get_leaves_for_passed_quarters(
+					annual_allocation, leave_details, date_of_joining
+				)
+			else:
+				new_leaves_allocated = self.get_leaves_for_passed_months(
 					annual_allocation, leave_details, date_of_joining
 				)
 
