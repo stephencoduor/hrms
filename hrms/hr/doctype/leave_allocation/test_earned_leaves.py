@@ -523,11 +523,12 @@ class TestLeaveAllocation(FrappeTestCase):
 
 		self.assertRaises(frappe.ValidationError, leave_allocation.allocate_leaves_manually, 1)
 
-	def test_half_yearly_earned_leaves_allocated_in_the_middle_of_leave_period(self):
+	def test_quarterly_earned_leaves_allocated_in_the_middle_of_leave_period(self):
 		frappe.flags.current_date = add_months(get_year_start(getdate()), 5)
 
 		employee = frappe.get_doc("Employee", "_T-Employee-00002")
-
+		# allocated after one quarter
+		frappe.flags.current_date = add_months(get_year_start(getdate()), 4)
 		leave_type = create_earned_leave_type(
 			"Quarterly", earned_leave_frequency="Quarterly", allocate_on_day="Last Day", rounding=0.5
 		)
@@ -560,7 +561,7 @@ class TestLeaveAllocation(FrappeTestCase):
 
 		self.assertEqual(total_leaves_allocated, 3.0)
 
-	def test_half_yearly_earned_leaves_allocated_at_the_start(self):
+	def test_quarterly_earned_leaves_allocated_at_the_start(self):
 		frappe.flags.current_date = get_year_start(getdate())
 
 		employee = frappe.get_doc("Employee", "_T-Employee-00002")
