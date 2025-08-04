@@ -260,22 +260,32 @@ class LeavePolicyAssignment(Document):
 	def get_leaves_for_passed_quarters(self, annual_allocation, leave_details, date_of_joining):
 		from hrms.hr.utils import get_monthly_earned_leave
 
-		def _get_passed_quarters():
+		def _get_passed_quarters(current_date, from_date, consider_current_quarter):
 			quarters_passed = 0
 			current_date = getdate(frappe.flags.current_date)
-			quarters_passed = month_diff(current_date, getdate(self.effective_from)) // 3
-			if is_earned_leave_applicable_for_current_quarter(leave_details.allocate_on_day):
+			from_date = getdate(from_date)
+
+			from_quarter = (from_date.year * 4) + ((from_date.month - 1) // 3)
+			current_quarter = (current_date.year * 4) + ((current_date.month - 1) // 3)
+
+			quarters_passed = current_quarter - from_quarter
+
+			if consider_current_quarter:
 				quarters_passed += 1
 
 			return quarters_passed
 
-		number_of_passed_quarters = _get_passed_quarters()
+		current_date, from_date = self.get_current_and_from_date(date_of_joining)
+		consider_current_quarter = is_earned_leave_applicable_for_current_quarter(
+			leave_details.allocate_on_day
+		)
+		number_of_passed_quarters = _get_passed_quarters(current_date, from_date, consider_current_quarter)
 
 		quarterly_earned_leave = get_monthly_earned_leave(
 			date_of_joining,
 			annual_allocation,
 			leave_details.earned_leave_frequency,
-			leave_details.rouding,
+			leave_details.rounding,
 			pro_rated=False,
 		)
 
