@@ -270,7 +270,7 @@ class LeavePolicyAssignment(Document):
 			return quarters_passed
 
 		number_of_passed_quarters = _get_passed_quarters()
-		print(number_of_passed_quarters)
+
 		quarterly_earned_leave = get_monthly_earned_leave(
 			date_of_joining,
 			annual_allocation,
