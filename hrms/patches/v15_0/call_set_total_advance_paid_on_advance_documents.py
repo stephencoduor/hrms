@@ -29,5 +29,9 @@ def call_set_total_advance_paid(doctype) -> list:
 	).run(as_dict=True)
 
 	for entry in entries:
-		advance_payment_ledger = frappe.get_doc(entry.against_voucher_type, entry.against_voucher_no)
-		advance_payment_ledger.set_total_advance_paid()
+		try:
+			advance_payment_ledger = frappe.get_doc(entry.against_voucher_type, entry.against_voucher_no)
+			advance_payment_ledger.set_total_advance_paid()
+		except Exception as e:
+			frappe.log_error(e)
+			continue
