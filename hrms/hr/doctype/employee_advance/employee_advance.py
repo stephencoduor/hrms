@@ -106,6 +106,15 @@ class EmployeeAdvance(Document):
 	def set_total_advance_paid(self):
 		aple = frappe.qb.DocType("Advance Payment Ledger Entry")
 
+		account_type = frappe.db.get_value("Account", self.advance_account, "account_type")
+
+		if account_type == "Receivable":
+			paid_amount_condition = aple.amount > 0
+			returned_amount_condition = aple.amount < 0
+		elif account_type == "Payable":
+			paid_amount_condition = aple.amount < 0
+			returned_amount_condition = aple.amount > 0
+
 		paid_amount = (
 			frappe.qb.from_(aple)
 			.select(Abs(Sum(aple.amount)).as_("paid_amount"))
@@ -114,18 +123,18 @@ class EmployeeAdvance(Document):
 				& (aple.delinked == 0)
 				& (aple.against_voucher_type == self.doctype)
 				& (aple.against_voucher_no == self.name)
-				& (aple.amount < 0)
+				& (paid_amount_condition)
 			)
 		).run(as_dict=True)[0].paid_amount or 0
 		return_amount = (
 			frappe.qb.from_(aple)
-			.select(Sum(aple.amount).as_("return_amount"))
+			.select(Abs(Sum(aple.amount)).as_("return_amount"))
 			.where(
 				(aple.company == self.company)
 				& (aple.delinked == 0)
 				& (aple.against_voucher_type == self.doctype)
 				& (aple.against_voucher_no == self.name)
-				& (aple.amount > 0)
+				& (returned_amount_condition)
 			)
 		).run(as_dict=True)[0].return_amount or 0
 
