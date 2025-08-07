@@ -258,7 +258,7 @@ def make_bank_entry(dt, dn):
 			"exchange_rate": flt(paying_exchange_rate),
 		},
 	)
-
+	je.flags.ignore_party_account_validation = True
 	return je.as_dict()
 
 
