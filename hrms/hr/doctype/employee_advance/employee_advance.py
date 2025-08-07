@@ -5,7 +5,7 @@
 import frappe
 from frappe import _
 from frappe.model.document import Document
-from frappe.query_builder.functions import Sum
+from frappe.query_builder.functions import Abs, Sum
 from frappe.utils import flt, nowdate
 
 import erpnext
@@ -47,7 +47,7 @@ class EmployeeAdvance(Document):
 				)
 
 	def on_cancel(self):
-		self.ignore_linked_doctypes = ("GL Entry", "Payment Ledger Entry")
+		self.ignore_linked_doctypes = ("GL Entry", "Payment Ledger Entry", "Advance Payment Ledger Entry")
 		self.check_linked_payment_entry()
 		self.set_status(update=True)
 
@@ -104,32 +104,37 @@ class EmployeeAdvance(Document):
 			self.status = status
 
 	def set_total_advance_paid(self):
-		gle = frappe.qb.DocType("GL Entry")
+		aple = frappe.qb.DocType("Advance Payment Ledger Entry")
+
+		account_type = frappe.db.get_value("Account", self.advance_account, "account_type")
+
+		if account_type == "Receivable":
+			paid_amount_condition = aple.amount > 0
+			returned_amount_condition = aple.amount < 0
+		elif account_type == "Payable":
+			paid_amount_condition = aple.amount < 0
+			returned_amount_condition = aple.amount > 0
 
 		paid_amount = (
-			frappe.qb.from_(gle)
-			.select(Sum(gle.debit).as_("paid_amount"))
+			frappe.qb.from_(aple)
+			.select(Abs(Sum(aple.amount)).as_("paid_amount"))
 			.where(
-				(gle.against_voucher_type == "Employee Advance")
-				& (gle.against_voucher == self.name)
-				& (gle.party_type == "Employee")
-				& (gle.party == self.employee)
-				& (gle.docstatus == 1)
-				& (gle.is_cancelled == 0)
+				(aple.company == self.company)
+				& (aple.delinked == 0)
+				& (aple.against_voucher_type == self.doctype)
+				& (aple.against_voucher_no == self.name)
+				& (paid_amount_condition)
 			)
 		).run(as_dict=True)[0].paid_amount or 0
-
 		return_amount = (
-			frappe.qb.from_(gle)
-			.select(Sum(gle.credit).as_("return_amount"))
+			frappe.qb.from_(aple)
+			.select(Abs(Sum(aple.amount)).as_("return_amount"))
 			.where(
-				(gle.against_voucher_type == "Employee Advance")
-				& (gle.voucher_type != "Expense Claim")
-				& (gle.against_voucher == self.name)
-				& (gle.party_type == "Employee")
-				& (gle.party == self.employee)
-				& (gle.docstatus == 1)
-				& (gle.is_cancelled == 0)
+				(aple.company == self.company)
+				& (aple.delinked == 0)
+				& (aple.against_voucher_type == self.doctype)
+				& (aple.against_voucher_no == self.name)
+				& (returned_amount_condition)
 			)
 		).run(as_dict=True)[0].return_amount or 0
 
@@ -253,7 +258,7 @@ def make_bank_entry(dt, dn):
 			"exchange_rate": flt(paying_exchange_rate),
 		},
 	)
-
+	je.flags.ignore_party_account_validation = True
 	return je.as_dict()
 
 
