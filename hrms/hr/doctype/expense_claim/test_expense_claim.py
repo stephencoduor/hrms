@@ -35,6 +35,7 @@ class TestExpenseClaim(FrappeTestCase):
 			).insert()
 
 			frappe.db.set_value("Company", company_name, "default_cost_center", cost_center)
+		frappe.db.set_value("Account", "Employee Advances - _TC", "account_type", "Receivable")
 
 	def tearDown(self):
 		frappe.set_user("Administrator")
