@@ -6,7 +6,7 @@ import frappe
 from frappe import _
 from frappe.model.document import Document
 from frappe.query_builder.functions import Abs, Sum
-from frappe.utils import flt, nowdate
+from frappe.utils import flt, get_link_to_form, nowdate
 
 import erpnext
 from erpnext.accounts.doctype.journal_entry.journal_entry import get_default_bank_cash_account
@@ -28,6 +28,7 @@ class EmployeeAdvance(Document):
 	def validate(self):
 		validate_active_employee(self.employee)
 		self.validate_exchange_rate()
+		self.validate_advance_account_type()
 		self.set_status()
 		self.set_pending_amount()
 
@@ -64,6 +65,15 @@ class EmployeeAdvance(Document):
 	def validate_exchange_rate(self):
 		if not self.exchange_rate:
 			frappe.throw(_("Exchange Rate cannot be zero."))
+
+	def validate_advance_account_type(self):
+		account_type = frappe.db.get_value("Account", self.advance_account, "account_type")
+		if account_type != "Receivable":
+			frappe.throw(
+				_("Employee advance account {0} should of of type {1}.").format(
+					get_link_to_form("Account", self.advance_account), frappe.bold("Receivable")
+				)
+			)
 
 	def set_status(self, update=False):
 		precision = self.precision("paid_amount")
