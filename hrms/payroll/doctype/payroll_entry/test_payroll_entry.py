@@ -63,7 +63,7 @@ class TestPayrollEntry(FrappeTestCase):
 
 		frappe.db.set_value("Company", "_Test Company", "default_holiday_list", "_Test Holiday List")
 		frappe.db.set_single_value("Payroll Settings", "email_salary_slip_to_employee", 0)
-
+		frappe.db.set_value("Account", "Employee Advances - _TC", "account_type", "Receivable")
 		# set default payable account
 		default_account = frappe.db.get_value("Company", "_Test Company", "default_payroll_payable_account")
 		if not default_account or default_account != "_Test Payroll Payable - _TC":
