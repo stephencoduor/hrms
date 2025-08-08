@@ -70,7 +70,7 @@ class EmployeeAdvance(Document):
 		account_type = frappe.db.get_value("Account", self.advance_account, "account_type")
 		if account_type != "Receivable":
 			frappe.throw(
-				_("Employee advance account {0} should of of type {1}.").format(
+				_("Employee advance account {0} should be of type {1}.").format(
 					get_link_to_form("Account", self.advance_account), frappe.bold("Receivable")
 				)
 			)
