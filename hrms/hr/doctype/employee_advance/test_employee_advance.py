@@ -28,6 +28,7 @@ class TestEmployeeAdvance(FrappeTestCase):
 		frappe.db.delete("Employee Advance")
 		self.update_company_in_fiscal_year()
 		frappe.db.set_value("Account", "Employee Advances - _TC", "account_type", "Receivable")
+		frappe.db.set_value("Account", "_Test Employee Advance - _TC", "account_type", "Receivable")
 
 	def test_paid_amount_and_status(self):
 		employee_name = make_employee("_T@employee.advance", "_Test Company")
