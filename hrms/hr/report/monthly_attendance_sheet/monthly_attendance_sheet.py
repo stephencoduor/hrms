@@ -459,7 +459,7 @@ def get_attendance_status_for_summarized_view(
 	) == cint(details.joined_year)
 
 	for day in range(1, total_days + 1):
-		if day in attendance_days or (joined_in_current_period and day < details.joined_date):
+		if day in attendance_days or (joined_in_current_period and cint(day) < cint(details.joined_date)):
 			continue
 
 		status = get_holiday_status(day, holidays)
