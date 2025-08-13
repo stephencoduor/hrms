@@ -116,7 +116,11 @@ class EmployeeAdvance(Document):
 	def set_total_advance_paid(self):
 		aple = frappe.qb.DocType("Advance Payment Ledger Entry")
 
-		account_type = frappe.db.get_value("Account", self.advance_account, "account_type")
+		account_type, account_curreny = frappe.get_value(
+			"Account", self.advance_account, ["account_type", "account_currency"]
+		)
+
+		company_currency = frappe.get_value("Company", self.company, "default_currency")
 
 		if account_type == "Receivable":
 			paid_amount_condition = aple.amount > 0
@@ -124,6 +128,12 @@ class EmployeeAdvance(Document):
 		elif account_type == "Payable":
 			paid_amount_condition = aple.amount < 0
 			returned_amount_condition = aple.amount > 0
+		else:
+			frappe.throw(
+				_("Employee advance account {0} should be of type {1}").format(
+					frappe.bold(self.advance_account), frappe.bold("Receivable")
+				)
+			)
 
 		paid_amount = (
 			frappe.qb.from_(aple)
@@ -148,9 +158,8 @@ class EmployeeAdvance(Document):
 			)
 		).run(as_dict=True)[0].return_amount or 0
 
-		if paid_amount != 0:
+		if company_currency != self.currency and account_curreny == company_currency:
 			paid_amount = flt(paid_amount) / flt(self.exchange_rate)
-		if return_amount != 0:
 			return_amount = flt(return_amount) / flt(self.exchange_rate)
 
 		precision = self.precision("paid_amount")
