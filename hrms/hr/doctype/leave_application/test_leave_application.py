@@ -1401,7 +1401,7 @@ class TestLeaveApplication(FrappeTestCase):
 		)
 		leave_allocation.submit()
 
-		expire_allocation(leave_allocation, expiry_date=add_days(getdate(), -1))
+		expire_allocation(leave_allocation, expiry_date=getdate())
 
 		leave_balance = get_leave_balance_on(
 			employee=employee.name, leave_type=leave_type.name, date=getdate()
