@@ -465,7 +465,7 @@ def get_attendance_status_for_summarized_view(
 	total_holidays = total_unmarked_days = 0
 
 	for day in range(1, total_days + 1):
-		if day in attendance_days or (cint(joined_in_current_period) and cint(day) < cint(joined_date)):
+		if day in attendance_days or (joined_in_current_period and day < joined_date):
 			continue
 
 		status = get_holiday_status(day, holidays)
