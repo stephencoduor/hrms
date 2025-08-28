@@ -74,11 +74,29 @@ frappe.ui.form.on("Payroll Entry", {
 						frm.page.clear_primary_action();
 						frm.refresh();
 					});
+<<<<<<< HEAD
 				});
 			} else if (frm.doc.docstatus == 1 && frm.doc.status == "Failed") {
 				frm.add_custom_button(__("Create Salary Slips"), function () {
 					frm.call("create_salary_slips");
 				}).addClass("btn-primary");
+=======
+				} else if (frm.doc.overtime_step === "Submit") {
+					frm.add_custom_button(__("Submit Overtime Slips"), () => {
+						frm.call({
+							doc: frm.doc,
+							method: "submit_overtime_slips",
+						});
+					});
+				} else {
+					frm.page.set_primary_action(__("Create Salary Slips"), () => {
+						frm.save("Submit").then(() => {
+							frm.page.clear_primary_action();
+							frm.refresh();
+						});
+					});
+				}
+>>>>>>> be35ae5f (fix(payroll-entry): submit payroll entry while creating salary slip in background job)
 			}
 		}
 
@@ -128,9 +146,14 @@ frappe.ui.form.on("Payroll Entry", {
 			});
 	},
 
+<<<<<<< HEAD
 	create_salary_slips: function (frm) {
 		frm.call({
 			doc: frm.doc,
+=======
+	create_salary_slip: function (frm) {
+		frappe.call({
+>>>>>>> be35ae5f (fix(payroll-entry): submit payroll entry while creating salary slip in background job)
 			method: "run_doc_method",
 			args: {
 				method: "create_salary_slips",
@@ -152,7 +175,7 @@ frappe.ui.form.on("Payroll Entry", {
 			}).addClass("btn-primary");
 		} else if (!frm.doc.salary_slips_created && frm.doc.status === "Failed") {
 			frm.add_custom_button(__("Create Salary Slips"), function () {
-				frm.trigger("create_salary_slips");
+				frm.trigger("create_salary_slip");
 			}).addClass("btn-primary");
 		}
 	},
