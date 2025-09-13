@@ -1,5 +1,5 @@
 # **Install Script: Refactoring the Frappe Easy Install Script**
-
+REF: https://github.com/frappe/bench
 The refactoring process transformed a single, long procedural script into a more structured, readable, and maintainable Python application. This document explores the key changes, comparing the "before" and "after" with code snippets to illustrate the benefits of each improvement.
 
 ---
