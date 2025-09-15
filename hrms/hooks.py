@@ -10,7 +10,7 @@ source_link = "http://github.com/frappe/hrms"
 add_to_apps_screen = [
 	{
 		"name": "hrms",
-		"logo": "/assets/hrms/images/frappe-hr-logo.svg",
+		"logo": "/assets/hrms/images/hr-logo.svg",
 		"title": "F-Payroll",
 		"route": "/app/hr",
 		"has_permission": "hrms.hr.utils.check_app_permission",
