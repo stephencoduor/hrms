@@ -1,8 +1,8 @@
 <div align="center">
 	<a href="https://frappehr.com">
-		<img src="https://raw.githubusercontent.com/frappe/hrms/develop/hrms/public/images/frappe-hr-logo.png" height="128" alt="Frappe HR Logo">
+		<img src="https://raw.githubusercontent.com/frappe/hrms/develop/hrms/public/images/frappe-hr-logo.png" height="128" alt="F-Payroll Logo">
 	</a>
-	<h2>Frappe HR</h2>
+	<h2>F-Payroll</h2>
 	<p align="center">
 		<p>Open Source, modern, and easy-to-use HR and Payroll Software for all organizations</p>
 	</p>
@@ -22,7 +22,7 @@
 
 ## Introduction
 
-Frappe HR has everything you need to drive excellence within the company. It's a complete HRMS solution with over 13 different modules right from Employee Management, Onboarding, Leaves, to Payroll, Taxation, and more!
+F-Payroll has everything you need to drive excellence within the company. It's a complete HRMS solution with over 13 different modules right from Employee Management, Onboarding, Leaves, to Payroll, Taxation, and more!
 
 ![HRMS](hrms.png)
 
@@ -61,7 +61,7 @@ Frappe HR has everything you need to drive excellence within the company. It's a
 
 ## Learning and Community
 
-1. [Documentation](https://docs.frappe.io/hr) - Extensive documentation for Frappe HR.
+1. [Documentation](https://docs.frappe.io/hr) - Extensive documentation for F-Payroll.
 2. [User Forum](https://discuss.erpnext.com/) - Engage with the community of ERPNext users and service providers.
 3. [Telegram Group](https://t.me/frappehr) - Get instant help from the community of users.
 
