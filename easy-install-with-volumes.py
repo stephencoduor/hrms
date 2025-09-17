@@ -128,22 +128,28 @@ def write_to_env(
     """
     quoted_sites = ",".join([f"`{site}`" for site in sites]).strip(",")
     example_env = get_from_env(frappe_docker_dir, "example.env")
-    erpnext_version = erpnext_version or example_env["ERPNEXT_VERSION"]
-    env_file_lines = [
-        # defaults to latest version of ERPNext
-        f"ERPNEXT_VERSION={erpnext_version}\n",
-        f"DB_PASSWORD={db_pass}\n",
-        "DB_HOST=db\n",
-        "DB_PORT=3306\n",
-        "REDIS_CACHE=redis-cache:6379\n",
-        "REDIS_QUEUE=redis-queue:6379\n",
-        "REDIS_SOCKETIO=redis-socketio:6379\n",
-        f"LETSENCRYPT_EMAIL={email}\n",
-        f"SITE_ADMIN_PASS={admin_pass}\n",
-        f"SITES={quoted_sites}\n",
-        "PULL_POLICY=missing\n",
-        f'BACKUP_CRONSTRING="{cronstring}"\n',
-    ]
+    env_file_lines = []
+
+    # ***** FIX: Only write ERPNEXT_VERSION if a custom image is NOT used *****
+    if not custom_image:
+        erpnext_version = erpnext_version or example_env["ERPNEXT_VERSION"]
+        env_file_lines.append(f"ERPNEXT_VERSION={erpnext_version}\n")
+
+    env_file_lines.extend(
+        [
+            f"DB_PASSWORD={db_pass}\n",
+            "DB_HOST=db\n",
+            "DB_PORT=3306\n",
+            "REDIS_CACHE=redis-cache:6379\n",
+            "REDIS_QUEUE=redis-queue:6379\n",
+            "REDIS_SOCKETIO=redis-socketio:6379\n",
+            f"LETSENCRYPT_EMAIL={email}\n",
+            f"SITE_ADMIN_PASS={admin_pass}\n",
+            f"SITES={quoted_sites}\n",
+            "PULL_POLICY=missing\n",
+            f'BACKUP_CRONSTRING="{cronstring}"\n',
+        ]
+    )
 
     if http_port:
         env_file_lines.append(f"HTTP_PUBLISH_PORT={http_port}\n")
@@ -240,7 +246,7 @@ def start_prod(
         sites (List[str], optional): List of site names. Defaults to [].
         email (str, optional): Email for SSL. Defaults to None.
         cronstring (str, optional): Backup cron schedule. Defaults to None.
-        version (str, optional): ERPNext version. Defaults to None.
+        version (str, optional): ERPNext or image version. Defaults to None.
         image (str, optional): Custom image name. Defaults to None.
         is_https (bool, optional): Flag to enable HTTPS. Defaults to True.
         http_port (str, optional): HTTP port for no-ssl deployments. Defaults to None.
@@ -278,9 +284,26 @@ def start_prod(
     custom_image = None
     custom_tag = None
 
-    if image:
-        custom_image = image
-        custom_tag = version
+    # ***** FIX: Properly parse image name and tag *****
+    if image:  # from -i flag
+        # If user provides a version via -v, it takes precedence as the tag
+        if version:
+            custom_image = image
+            custom_tag = version
+        # Otherwise, check if the image name itself contains the tag
+        elif ":" in image:
+            # Split only on the last colon to support image names with port numbers
+            parts = image.rsplit(":", 1)
+            # Basic validation to see if the part after colon looks like a tag
+            if "/" not in parts[1]:
+                custom_image = parts[0]
+                custom_tag = parts[1]
+            else:  # It's probably a port number, not a tag
+                custom_image = image
+                custom_tag = "latest"  # Default tag
+        else:  # No tag found anywhere, use 'latest'
+            custom_image = image
+            custom_tag = "latest"
 
     with open(compose_file_name, "w") as f:
         # Writing to compose file
@@ -315,10 +338,11 @@ def start_prod(
             db_pass = env["DB_PASSWORD"]
             admin_pass = env["SITE_ADMIN_PASS"]
             email = env["LETSENCRYPT_EMAIL"]
-            custom_image = env.get("CUSTOM_IMAGE")
-            custom_tag = env.get("CUSTOM_TAG")
-
+            # These might have been set by the new logic, so prefer them.
+            custom_image = custom_image or env.get("CUSTOM_IMAGE")
+            custom_tag = custom_tag or env.get("CUSTOM_TAG")
             version = env.get("ERPNEXT_VERSION", version)
+
             write_to_env(
                 frappe_docker_dir=frappe_docker_dir,
                 out_file=env_file_path,
@@ -353,7 +377,6 @@ def start_prod(
                 ),
                 "-f",
                 "overrides/compose.backup-cron.yaml",
-                # ***** FIX: Include the named volumes override file *****
                 "-f",
                 "named-volumes.yaml",
                 "--env-file",
@@ -368,9 +391,9 @@ def start_prod(
                 check=True,
             )
 
-        except Exception:
+        except Exception as e:
             logging.error("Docker Compose generation failed", exc_info=True)
-            cprint("\nGenerating Compose File failed\n")
+            cprint("\nGenerating Compose File failed\n", e)
             sys.exit(1)
 
     try:
@@ -390,6 +413,7 @@ def start_prod(
         subprocess.run(
             command,
             check=True,
+            cwd=frappe_docker_dir,
         )
         logging.info(f"Docker Compose file generated at ~/{project}-compose.yml")
 
@@ -625,6 +649,7 @@ def create_site(
         subprocess.run(
             command,
             check=True,
+            cwd=get_frappe_docker_path(),
         )
         logging.info("New site creation completed")
     except Exception as e:
@@ -681,6 +706,7 @@ def exec_command(project: str, command: List[str] = [], interactive_terminal=Fal
         subprocess.run(
             exec_command,
             check=True,
+            cwd=get_frappe_docker_path(),
         )
         logging.info("New site creation completed")
     except Exception as e:
