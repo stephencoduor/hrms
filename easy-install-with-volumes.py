@@ -1,4 +1,18 @@
 #!/usr/bin/env python3
+"""
+Easy Install Script for Frappe Docker.
+
+This script automates the setup, deployment, and management of Frappe and ERPNext
+instances using the official frappe_docker repository. It simplifies the process
+of creating production, development, and custom-built environments.
+
+Subcommands:
+    build: Build a custom Docker image with specified apps.
+    deploy: Deploy a new production instance using Docker Compose.
+    upgrade: Upgrade an existing production instance.
+    develop: Set up a local development environment.
+    exec: Execute a command inside a running container.
+"""
 
 import argparse
 import base64
@@ -22,13 +36,15 @@ logging.basicConfig(
 
 
 def cprint(*args, level: int = 1):
-    """
-    logs colorful messages
-    level = 1 : RED
-    level = 2 : GREEN
-    level = 3 : YELLOW
+    """Logs colorful messages to the console.
 
-    default level = 1
+    Args:
+        *args: The message parts to be printed.
+        level (int, optional): The color level.
+                               1: RED (Error)
+                               2: GREEN (Success)
+                               3: YELLOW (Warning/Info)
+                               Defaults to 1.
     """
     CRED = "\033[31m"
     CGRN = "\33[92m"
@@ -44,6 +60,7 @@ def cprint(*args, level: int = 1):
 
 
 def clone_frappe_docker_repo() -> None:
+    """Downloads and extracts the frappe_docker repository from GitHub."""
     try:
         urllib.request.urlretrieve(
             "https://github.com/frappe/frappe_docker/archive/refs/heads/main.zip",
@@ -61,7 +78,16 @@ def clone_frappe_docker_repo() -> None:
         cprint("\nCloning frappe_docker Failed\n\n", "[ERROR]: ", e, level=1)
 
 
-def get_from_env(dir, file) -> Dict:
+def get_from_env(dir: str, file: str) -> Dict:
+    """Reads key-value pairs from a .env file.
+
+    Args:
+        dir (str): The directory containing the .env file.
+        file (str): The name of the .env file.
+
+    Returns:
+        Dict: A dictionary of the environment variables.
+    """
     env_vars = {}
     with open(os.path.join(dir, file)) as f:
         for line in f:
@@ -85,6 +111,21 @@ def write_to_env(
     custom_image: str = None,
     custom_tag: str = None,
 ) -> None:
+    """Writes configuration to a .env file.
+
+    Args:
+        frappe_docker_dir (str): Path to the frappe_docker directory.
+        out_file (str): The full path of the .env file to write.
+        sites (List[str]): A list of site names.
+        db_pass (str): The MariaDB root password.
+        admin_pass (str): The Frappe administrator password.
+        email (str): The email for Let's Encrypt SSL.
+        cronstring (str): The cron schedule for backups.
+        erpnext_version (str, optional): The ERPNext version. Defaults to None.
+        http_port (str, optional): The HTTP port to publish. Defaults to None.
+        custom_image (str, optional): The custom Docker image name. Defaults to None.
+        custom_tag (str, optional): The custom Docker image tag. Defaults to None.
+    """
     quoted_sites = ",".join([f"`{site}`" for site in sites]).strip(",")
     example_env = get_from_env(frappe_docker_dir, "example.env")
     erpnext_version = erpnext_version or example_env["ERPNEXT_VERSION"]
@@ -118,7 +159,14 @@ def write_to_env(
 
 
 def generate_pass(length: int = 12) -> str:
-    """Generate random hash using best available randomness source."""
+    """Generate a random secure password.
+
+    Args:
+        length (int, optional): The desired length of the password. Defaults to 12.
+
+    Returns:
+        str: The generated password.
+    """
     import math
     import secrets
 
@@ -128,18 +176,32 @@ def generate_pass(length: int = 12) -> str:
     return secrets.token_hex(math.ceil(length / 2))[:length]
 
 
-def get_frappe_docker_path():
+def get_frappe_docker_path() -> str:
+    """Gets the absolute path to the frappe_docker directory.
+
+    Returns:
+        str: The absolute path.
+    """
     return os.path.join(os.getcwd(), "frappe_docker")
 
 
 def check_repo_exists() -> bool:
+    """Checks if the frappe_docker repository exists locally.
+
+    Returns:
+        bool: True if it exists, False otherwise.
+    """
     return os.path.exists(get_frappe_docker_path())
 
 
-def create_volumes_override_file(project_name: str, frappe_docker_dir: str) -> None:
-    """Creates a docker-compose override file for named volumes."""
-    volume_override_content = f"""
-volumes:
+def create_volumes_override_file(frappe_docker_dir: str, project_name: str) -> None:
+    """Creates a docker-compose override file for named volumes.
+
+    Args:
+        frappe_docker_dir (str): The path to the frappe_docker directory.
+        project_name (str): The name of the project, used to prefix volumes.
+    """
+    override_content = f"""volumes:
   sites:
     name: {project_name}_sites
   logs:
@@ -155,10 +217,10 @@ volumes:
   sites-assets:
     name: {project_name}_sites-assets
 """
-    override_file_path = os.path.join(frappe_docker_dir, "named-volumes.yaml")
-    with open(override_file_path, "w") as f:
-        f.write(volume_override_content)
-    logging.info(f"Generated named volumes override file at {override_file_path}")
+    override_path = os.path.join(frappe_docker_dir, "named-volumes.yaml")
+    with open(override_path, "w") as f:
+        f.write(override_content)
+    logging.info(f"Created named volumes override file at {override_path}")
 
 
 def start_prod(
@@ -171,6 +233,21 @@ def start_prod(
     is_https: bool = True,
     http_port: str = None,
 ):
+    """Generates compose file and starts the production containers.
+
+    Args:
+        project (str): The project name.
+        sites (List[str], optional): List of site names. Defaults to [].
+        email (str, optional): Email for SSL. Defaults to None.
+        cronstring (str, optional): Backup cron schedule. Defaults to None.
+        version (str, optional): ERPNext version. Defaults to None.
+        image (str, optional): Custom image name. Defaults to None.
+        is_https (bool, optional): Flag to enable HTTPS. Defaults to True.
+        http_port (str, optional): HTTP port for no-ssl deployments. Defaults to None.
+
+    Returns:
+        Tuple[str, str]: A tuple containing the db_pass and admin_pass.
+    """
     if not check_repo_exists():
         clone_frappe_docker_repo()
     install_container_runtime()
@@ -189,8 +266,8 @@ def start_prod(
 
     frappe_docker_dir = get_frappe_docker_path()
 
-    # Create the named volumes override file
-    create_volumes_override_file(project, frappe_docker_dir)
+    # Create the override file for named volumes
+    create_volumes_override_file(frappe_docker_dir, project)
 
     cprint(
         f"\nPlease refer to {env_file_path} to know which keys to set\n\n",
@@ -276,7 +353,7 @@ def start_prod(
                 ),
                 "-f",
                 "overrides/compose.backup-cron.yaml",
-                # Add the named volumes override file here
+                # ***** FIX: Include the named volumes override file *****
                 "-f",
                 "named-volumes.yaml",
                 "--env-file",
@@ -335,6 +412,19 @@ def setup_prod(
     is_https: bool = False,
     http_port: str = None,
 ) -> None:
+    """Sets up a full production instance, including site creation.
+
+    Args:
+        project (str): Project name.
+        sites (List[str]): List of site names.
+        email (str): Email for SSL.
+        cronstring (str): Backup cron schedule.
+        version (str, optional): ERPNext version. Defaults to None.
+        image (str, optional): Custom image name. Defaults to None.
+        apps (List[str], optional): Apps to install on sites. Defaults to [].
+        is_https (bool, optional): Flag for HTTPS. Defaults to False.
+        http_port (str, optional): HTTP port for no-ssl. Defaults to None.
+    """
     if len(sites) == 0:
         sites = ["site1.localhost"]
 
@@ -375,6 +465,16 @@ def update_prod(
     is_https: bool = False,
     http_port: str = None,
 ) -> None:
+    """Updates an existing production instance.
+
+    Args:
+        project (str): Project name to update.
+        version (str, optional): New ERPNext version. Defaults to None.
+        image (str, optional): New custom image name. Defaults to None.
+        cronstring (str, optional): New backup schedule. Defaults to None.
+        is_https (bool, optional): Flag for HTTPS. Defaults to False.
+        http_port (str, optional): HTTP port for no-ssl. Defaults to None.
+    """
     start_prod(
         project=project,
         version=version,
@@ -387,6 +487,11 @@ def update_prod(
 
 
 def setup_dev_instance(project: str):
+    """Sets up a development environment.
+
+    Args:
+        project (str): The project name for the dev environment.
+    """
     if not check_repo_exists():
         clone_frappe_docker_repo()
     install_container_runtime()
@@ -418,6 +523,7 @@ def setup_dev_instance(project: str):
 
 
 def install_docker():
+    """Installs Docker on Linux systems."""
     cprint("Docker is not installed, Installing Docker...", level=3)
     logging.info("Docker not found, installing Docker")
     if platform.system() == "Darwin" or platform.system() == "Windows":
@@ -465,6 +571,11 @@ def install_docker():
 
 
 def install_container_runtime(runtime="docker"):
+    """Checks if a container runtime is installed, and installs it if not.
+
+    Args:
+        runtime (str, optional): The container runtime to check. Defaults to "docker".
+    """
     if which(runtime) is not None:
         cprint(runtime.title() + " is already installed", level=2)
         return
@@ -479,6 +590,15 @@ def create_site(
     admin_pass: str,
     apps: List[str] = [],
 ):
+    """Creates a new Frappe site in the backend container.
+
+    Args:
+        sitename (str): The name of the site to create.
+        project (str): The project name.
+        db_pass (str): The MariaDB root password.
+        admin_pass (str): The Frappe administrator password.
+        apps (List[str], optional): List of apps to install. Defaults to [].
+    """
     apps = apps or []
     cprint(f"\nCreating site: {sitename} \n", level=3)
     command = [
@@ -513,6 +633,11 @@ def create_site(
 
 
 def migrate_site(project: str):
+    """Runs `bench migrate` for all sites in a project.
+
+    Args:
+        project (str): The project name.
+    """
     cprint(f"\nMigrating sites for {project}", level=3)
 
     exec_command(
@@ -527,6 +652,13 @@ def migrate_site(project: str):
 
 
 def exec_command(project: str, command: List[str] = [], interactive_terminal=False):
+    """Executes a command inside the backend container of a project.
+
+    Args:
+        project (str): The project name.
+        command (List[str], optional): The command to execute. Defaults to [].
+        interactive_terminal (bool, optional): Whether to attach an interactive tty. Defaults to False.
+    """
     if not command:
         command = ["echo", '"Please execute a command"']
 
@@ -557,6 +689,14 @@ def exec_command(project: str, command: List[str] = [], interactive_terminal=Fal
 
 
 def add_project_option(parser: argparse.ArgumentParser):
+    """Adds the common '--project' argument to a parser.
+
+    Args:
+        parser (argparse.ArgumentParser): The parser to add the argument to.
+
+    Returns:
+        argparse.ArgumentParser: The modified parser.
+    """
     parser.add_argument(
         "-n",
         "--project",
@@ -567,6 +707,14 @@ def add_project_option(parser: argparse.ArgumentParser):
 
 
 def add_setup_options(parser: argparse.ArgumentParser):
+    """Adds common setup arguments to a parser.
+
+    Args:
+        parser (argparse.ArgumentParser): The parser to add arguments to.
+
+    Returns:
+        argparse.ArgumentParser: The modified parser.
+    """
     parser.add_argument(
         "-a",
         "--app",
@@ -589,6 +737,14 @@ def add_setup_options(parser: argparse.ArgumentParser):
 
 
 def add_common_parser(parser: argparse.ArgumentParser):
+    """Adds a common set of arguments to a subcommand parser.
+
+    Args:
+        parser (argparse.ArgumentParser): The parser to add arguments to.
+
+    Returns:
+        argparse.ArgumentParser: The modified parser.
+    """
     parser = add_project_option(parser)
     parser.add_argument(
         "-g",
@@ -616,6 +772,11 @@ def add_common_parser(parser: argparse.ArgumentParser):
 
 
 def add_build_parser(subparsers: argparse.ArgumentParser):
+    """Adds the 'build' subcommand and its arguments to the parser.
+
+    Args:
+        subparsers (argparse.ArgumentParser): The subparser object from the main parser.
+    """
     parser = subparsers.add_parser("build", help="Build custom images")
     parser = add_common_parser(parser)
     parser = add_setup_options(parser)
@@ -683,12 +844,22 @@ def add_build_parser(subparsers: argparse.ArgumentParser):
 
 
 def add_deploy_parser(subparsers: argparse.ArgumentParser):
+    """Adds the 'deploy' subcommand and its arguments to the parser.
+
+    Args:
+        subparsers (argparse.ArgumentParser): The subparser object from the main parser.
+    """
     parser = subparsers.add_parser("deploy", help="Deploy using compose")
     parser = add_common_parser(parser)
     parser = add_setup_options(parser)
 
 
 def add_develop_parser(subparsers: argparse.ArgumentParser):
+    """Adds the 'develop' subcommand and its arguments to the parser.
+
+    Args:
+        subparsers (argparse.ArgumentParser): The subparser object from the main parser.
+    """
     parser = subparsers.add_parser("develop", help="Development setup using compose")
     parser.add_argument(
         "-n", "--project", default="frappe", help="Compose project name"
@@ -696,11 +867,21 @@ def add_develop_parser(subparsers: argparse.ArgumentParser):
 
 
 def add_upgrade_parser(subparsers: argparse.ArgumentParser):
+    """Adds the 'upgrade' subcommand and its arguments to the parser.
+
+    Args:
+        subparsers (argparse.ArgumentParser): The subparser object from the main parser.
+    """
     parser = subparsers.add_parser("upgrade", help="Upgrade existing project")
     parser = add_common_parser(parser)
 
 
 def add_exec_parser(subparsers: argparse.ArgumentParser):
+    """Adds the 'exec' subcommand and its arguments to the parser.
+
+    Args:
+        subparsers (argparse.ArgumentParser): The subparser object from the main parser.
+    """
     parser = subparsers.add_parser("exec", help="Exec into existing project")
     parser = add_project_option(parser)
 
@@ -715,6 +896,18 @@ def build_image(
     python_version: str,
     node_version: str,
 ):
+    """Builds a custom Docker image.
+
+    Args:
+        push (bool): Flag to push the image after building.
+        frappe_path (str): The git URL for the Frappe repository.
+        frappe_branch (str): The git branch for the Frappe repository.
+        containerfile_path (str): Path to the Containerfile/Dockerfile.
+        apps_json_path (str): Path to the apps.json file.
+        tags (List[str]): A list of tags for the new image.
+        python_version (str): The Python version to use in the build.
+        node_version (str): The NodeJS version to use in the build.
+    """
     if not check_repo_exists():
         clone_frappe_docker_repo()
     install_container_runtime()
@@ -775,6 +968,11 @@ def build_image(
 
 
 def get_args_parser():
+    """Initializes the argument parser and all subcommands.
+
+    Returns:
+        argparse.ArgumentParser: The fully configured argument parser.
+    """
     parser = argparse.ArgumentParser(
         description="Easy install script for Frappe Framework"
     )
@@ -883,3 +1081,4 @@ if __name__ == "__main__":
             command=["bash"],
             interactive_terminal=True,
         )
+
